@@ -26,6 +26,8 @@ var gradeChampion8Button;
 var gradeChampion7Button;
 var gradeChampion6Button;
 var pointTotalButton;
+var mouseOver;
+var mouseOverBig;
 
 // spreadsheet variables
 var ttsheet6;
@@ -83,6 +85,8 @@ function setup(){
 
 	ribbonWinner = loadImage("images/RibbonWinner.png");
 	gradeChamp = loadImage("images/GradeChamp.png");
+	mouseOver = loadImage("images/MouseOver.png");
+	mouseOverBig = loadImage("images/MouseOverBig.png");
 
 
 	doonce = 0;
@@ -722,6 +726,68 @@ function drawButtons()
 
 	image(ribbonWinner,910,100);
 	image(gradeChamp,800,100);
+	
+	y = 50;
+	if (mouseX > 800 && mouseX < 900 && mouseY > 100+y && mouseY < 150+y)
+	{
+		image(mouseOver,800,y+100);
+	}
+	if (mouseX > 800 && mouseX < 900 && mouseY > 150+y && mouseY < 200+y)
+	{
+		image(mouseOver,800,y+150);
+	}
+	if (mouseX > 800 && mouseX < 900 && mouseY > 200+y && mouseY < 250+y)
+	{
+		image(mouseOver,800,y+200);
+	}
+	if (mouseX > 800 && mouseX < 900 && mouseY > 250+y && mouseY < 300+y)
+	{
+		image(mouseOver,800,y+250);
+	}
+	if (mouseX > 800 && mouseX < 900 && mouseY > 300+y && mouseY < 350+y)
+	{
+		image(mouseOver,800,y+300);
+	}
+	if (mouseX > 800 && mouseX < 900 && mouseY > 350+y && mouseY < 400+y)
+	{
+		image(mouseOver,800,y+350);
+	}
+	if (mouseX > 800 && mouseX < 900 && mouseY > 400+y && mouseY < 450+y)
+	{
+		image(mouseOver,800,y+400);
+	}
+	if (mouseX > 800 && mouseX < 1000 && mouseY > 50 && mouseY < 100)
+	{
+		image(mouseOverBig,800,50);
+	}
+	if (mouseX > 900 && mouseX < 1000 && mouseY > 100+y && mouseY < 150+y)
+	{
+		image(mouseOver,910,y+100);
+	}
+	if (mouseX > 900 && mouseX < 1000 && mouseY > 150+y && mouseY < 200+y)
+	{
+		image(mouseOver,910,y+150);
+	}
+	if (mouseX > 900 && mouseX < 1000 && mouseY > 200+y && mouseY < 250+y)
+	{
+		image(mouseOver,910,y+200);
+	}
+	if (mouseX > 900 && mouseX < 1000 && mouseY > 250+y && mouseY < 300+y)
+	{
+		image(mouseOver,910,y+250);
+	}
+	if (mouseX > 900 && mouseX < 1000 && mouseY > 300+y && mouseY < 350+y)
+	{
+		image(mouseOver,910,y+300);
+	}
+	if (mouseX > 900 && mouseX < 1000 && mouseY > 350+y && mouseY < 400+y)
+	{
+		image(mouseOver,910,y+350);
+	}
+	if (mouseX > 900 && mouseX < 1000 && mouseY > 400+y && mouseY < 450+y)
+	{
+		image(mouseOver,910,y+400);
+	}
 }
 
 
