@@ -635,8 +635,8 @@ function draw()
 	
 	if (doonce == 1)
 	{
-//		if (mouseIsPressed == true)
-//		{
+		if (mouseIsPressed == true)
+		{
 			y = 50;
 			if (mouseX > 800 && mouseX < 900 && mouseY > 100+y && mouseY < 150+y)
 			{
@@ -698,7 +698,7 @@ function draw()
 			{
 				showRibbonWinners(0);
 			}
-//		}
+		}
 	}
 	
 }
