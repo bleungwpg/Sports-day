@@ -132,8 +132,11 @@ function drawButtons()
 		fill(0,0,0);
 		text("Grade "+(b+6),34,39+buttonGap*b);
 		
-		if (mouseIsPressed && mouseX > 10 && mouseX < 10+100 &&
+//		if (mouseIsPressed && mouseX > 10 && mouseX < 10+100 &&
+//		    mouseY > 10+buttonGap*b && mouseY < 10+buttonGap*b+50)
+		if (mouseX > 10 && mouseX < 10+100 &&
 		    mouseY > 10+buttonGap*b && mouseY < 10+buttonGap*b+50)
+
 		{
 			currentGrade = b+6;
 			var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
@@ -190,7 +193,8 @@ function showData()
 			fill(0,0,0);
 			
 			// if mouse is pressed toggle the status
-			if (mouseIsPressed && lock == false)
+//			if (mouseIsPressed && lock == false)
+			if (lock == false)
 			{
 				if (filterdata[r][8] == 1)
 				{
