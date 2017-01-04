@@ -14,7 +14,7 @@ function setup(){
 	//create a drawing service 500px wide, 500px tall
 	createCanvas(1053,1505);
 
-	ipad = false;
+	ipad = true;
 	thimble = false;
 	testing = true;
 	dataSubmitted = false;
