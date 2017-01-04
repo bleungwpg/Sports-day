@@ -1,10 +1,12 @@
 google.load("visualization", "1", {packages:["corechart"]});
 
 var alldata = [[]];
-var filterdata = [[]];
+var ribbondata = [[]];
+var shotputdata = [[]];
 var maxRows;
 var maxCols;
-var filterRows;
+var ribbonRows;
+var shotputRows;
 var inp;
 var startGapSize = 25;
 var continuousGapSize = 25;
@@ -99,7 +101,8 @@ function handleQueryResponse(response) {
 
 	var rowdata = new Array(maxCols);
 	alldata = new Array(maxRows);
-	filterRows = 0;
+	ribbonRows = 0;
+	shotputRows = 0;
 
 	for (var r = 0; r < maxRows; r++)
 	{
@@ -116,34 +119,55 @@ function handleQueryResponse(response) {
 				alldata[r][c] = info;	
 			}
 			
+			if (alldata[r][3] == "Shot Putt")
+			{
+				shotputRows++;
+			}
+			
 			// if they are ribbon winners add one to count
 			if (alldata[r][8] == 1 || alldata[r][8] == 2)
 			{
-				filterRows++;
+				ribbonRows++;
 			}
 		}
 	}
 	
 
-	filterdata = new Array(filterRows);
+	ribbondata = new Array(ribbonRows);
 	
-	filterRows = 0;
+	ribbonRows = 0;
 	// copy only the ribbon winner data
 	for (var r = 0; r < maxRows; r++)
 	{
 		if (alldata[r][8] == 1 || alldata[r][8] == 2)
 		{
-			filterdata[filterRows] = new Array(maxCols);
+			ribbondata[ribbonRows] = new Array(maxCols);
 		
 			for (var c = 0; c < maxCols; c++)
 			{
-				filterdata[filterRows][c] = alldata[r][c];	
+				ribbondata[ribbonRows][c] = alldata[r][c];	
 			}
-			filterRows++;
+			ribbonRows++;
 		}
 	}
 	
+	shotputdata = new Array(shotputRows);
 	
+	shotputRows = 0;
+	// copy only the ribbon winner data
+	for (var r = 0; r < maxRows; r++)
+	{
+		if (alldata[r][3] == "Shot Putt")
+		{
+			shotputdata[shotputRows] = new Array(maxCols);
+		
+			for (var c = 0; c < maxCols; c++)
+			{
+				shotputdata[shotputRows][c] = alldata[r][c];	
+			}
+			shotputRows++;
+		}
+	}
 
 	// allow data to be shown after it has been submitted
 	dataSubmitted = true;
