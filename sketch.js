@@ -7,13 +7,17 @@ var currentGrade;
 var formData;
 var ipad;
 var eventUse;
-var shotputTextbox;
+var shotputTextbox = [];
+var shotputSubmitData = [];
+var maxShotputTextbox;
+var shotputIsSetup;
 
 
 function setup(){
 	//create a drawing service 500px wide, 500px tall
 	createCanvas(1053,1505);
 
+	shotputIsSetup = false;
 	ipad = true;
 	thimble = false;
 	testing = true;
@@ -26,6 +30,54 @@ function setup(){
 	currentGrade = 6;
 	lock = false;
 	eventUse = "ribbons";
+	maxShotputTextbox = 200;
+
+	var textboxH = 23;
+	var textboxHGap = 2;
+	shotputTextbox = new Array(maxShotputTextbox);
+	shotputSubmitData = new Array(maxShotputTextbox);
+	
+	
+
+	for (var i = 0; i < maxShotputTextbox; i++)
+	{
+		shotputTextbox[i] = createSelect();
+		shotputTextbox[i].position(600,i*textboxH+i*textboxHGap+34);
+		//	 shotputTextbox[i].size(100,textboxH);
+		shotputTextbox[i].hide();
+		
+
+//		shotputTextbox[i].option('0.0');
+//		shotputTextbox[i].option('0.1');		
+
+
+		var ones = 0;
+		for (var ones = 0; ones <= 50; ones++)
+		{
+
+			var d1 = 0;
+			for (var d1 = 0; d1 < 10; d1++)
+			{
+//				var d2 = 0;
+//				for (var d2 = 0; d2 < 10; d2++)
+//				{
+					shotputTextbox[i].option(''+ones+'.'+d1);
+//				}		
+			}
+		}
+		
+		shotputTextbox[i].changed(updateShotputData);
+
+
+	/*
+		shotputTextbox[i] = createInput();
+  		shotputTextbox[i].position(600,i*textboxH+i*textboxHGap+34);
+  		shotputTextbox[i].size(100,textboxH);
+  		shotputTextbox[i].hide();
+  		shotputTextbox[i].input(updateShotputData);
+  		*/
+  		shotputSubmitData[i] = 0;
+	}
 
 	// load up all textboxes and buttons in the interface
 	urlinp = createInput();
@@ -88,6 +140,8 @@ function draw(){
 		{
 			showShotputData();
 		}
+//			fill(255,255,255);
+//			text(shotputRows,800,10);
 	}
 	else
 	{
@@ -112,64 +166,59 @@ function draw(){
 	}
 }
 
+function closeShotput()
+{
+	for (var i = 0; i < maxShotputTextbox; i++)
+	{
+		shotputTextbox[i].hide();
+	}
+	shotputIsSetup = false;
+}
+
 function setupShotput()
 {
 
-	var textboxH = 23;
-	var textboxHGap = 2;
-	shotputTextbox = new Array(shotputRows);
+	for (var i = 0; i < maxShotputTextbox; i++)
+	{
+		if (i < shotputRows)
+		{
+			shotputTextbox[i].value(shotputdata[i][10]);
+			shotputTextbox[i].show();
+		}	
+		else
+			shotputTextbox[i].hide();
+	}
+	shotputIsSetup = true;
+}
+
+function updateShotputData()
+{
 
 	for (var i = 0; i < shotputRows; i++)
 	{
-		shotputTextbox[i] = createInput();
-  		shotputTextbox[i].position(600,i*textboxH+i*textboxHGap+34);
-  		shotputTextbox[i].size(100,textboxH);
+		fill(255,255,255);
+//		text(shotputdata[i][10],700,70+i*23+i*2);
+//		text(shotputTextbox[i].value(),700,70+i*23+i*2);
+		
+		
+		if (shotputdata[i][10] != shotputTextbox[i].value())
+		{
+			shotputdata[i][10] = shotputTextbox[i].value();
+			shotputSubmitData[i] = 1;
+//			fill(255,255,255);
+//			rect(800,90,100,100);
+		}
+	
 	}
 }
 
 // Create buttons from grades 6 - 12
+// handle what happens when you click on buttons
 function drawButtons()
 {
 	buttonGap = 60;
 
-	for (var b = 0; b < 7; b++)
-	{
-		if (currentGrade-6 == b)
-		{
-			fill(0,255,0);		
-		}
-		else
-		{
-			fill(255,255,255);
-		}
-		rect(10,10+buttonGap*b,100,50);
-		fill(0,0,0);
-		text("Grade "+(b+6),34,39+buttonGap*b);
-		
-		if (ipad == true)
-		{
-			if (mouseX > 10 && mouseX < 10+100 &&
-			    mouseY > 10+buttonGap*b && mouseY < 10+buttonGap*b+50)
-			{
-				currentGrade = b+6;
-				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
-
-				query.send(handleQueryResponse);
-			}
-		}
-		else
-		{
-			if (mouseIsPressed && mouseX > 10 && mouseX < 10+100 &&
-			    mouseY > 10+buttonGap*b && mouseY < 10+buttonGap*b+50)
-			{
-				currentGrade = b+6;
-				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
-
-				query.send(handleQueryResponse);
-			}
-		}
-	}
-	
+	// ------------- IF ribbon button is pressed setup -------------	
 	if (eventUse == "ribbons")
 	{
 		fill(255,255,0);
@@ -189,6 +238,7 @@ function drawButtons()
 			mouseY > 10+buttonGap*8 && mouseY < 10+buttonGap*8+50)
 		{
 			eventUse = "ribbons";
+			closeShotput();
 		}
 	}
 	else
@@ -197,10 +247,11 @@ function drawButtons()
 			mouseY > 10+buttonGap*8 && mouseY < 10+buttonGap*8+50)
 		{
 			eventUse = "ribbons";
+			closeShotput();
 		}
 	}
 
-
+	// ------------- IF shotput button is pressed setup -------------	
 	if (eventUse == "shotput")
 	{
 		fill(255,255,0);
@@ -219,8 +270,8 @@ function drawButtons()
 		if (mouseX > 10 && mouseX < 10+100 &&
 			mouseY > 10+buttonGap*9 && mouseY < 10+buttonGap*9+50)
 		{
-			setupShotput();
 			eventUse = "shotput";
+			setupShotput();
 		}
 	}
 	else
@@ -228,12 +279,49 @@ function drawButtons()
 		if (mouseIsPressed && mouseX > 10 && mouseX < 10+100 &&
 			mouseY > 10+buttonGap*9 && mouseY < 10+buttonGap*9+50)
 		{
-			setupShotput();
 			eventUse = "shotput";
+			setupShotput();
 		}
 	}
 
+	// ---------------------- IF Grade level button is pressed --------------------
+	for (var b = 0; b < 7; b++)
+	{
+		if (currentGrade-6 == b)
+		{
+			fill(0,255,0);		
+		}
+		else
+		{
+			fill(255,255,255);
+		}
+		rect(10,10+buttonGap*b,100,50);
+		fill(0,0,0);
+		text("Grade "+(b+6),34,39+buttonGap*b);
+		
+		if (ipad == true)
+		{
+			if (mouseX > 10 && mouseX < 10+100 &&
+			    mouseY > 10+buttonGap*b && mouseY < 10+buttonGap*b+50)
+			{	
+				currentGrade = b+6;
+				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
 
+				query.send(handleQueryResponse);
+			}
+		}
+		else
+		{
+			if (mouseIsPressed && mouseX > 10 && mouseX < 10+100 &&
+			    mouseY > 10+buttonGap*b && mouseY < 10+buttonGap*b+50)
+			{
+				currentGrade = b+6;
+				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+
+				query.send(handleQueryResponse);
+			}
+		}
+	}
 }
 
 function showShotputData()
@@ -249,6 +337,7 @@ function showShotputData()
 	col3 = 250;
 	col4 = 340;
 	col5 = 410;
+	col6 = 480;
 
 	fill(255,255,255);
 	moreH = 125;
@@ -257,8 +346,12 @@ function showShotputData()
 	text("House",col3+moreH,25);
 	text("Event",col4+moreH,25);
 	text("Gender",col5+moreH,25);
+	text("Shotputt",col6+moreH,25);
 
-
+	if (eventUse == "shotput" && shotputIsSetup == false)
+	{
+		setupShotput();
+	}
 	for (var r = 0; r < shotputRows; r++)
 	{
 		hoverOverGapSize = 8;
@@ -267,70 +360,8 @@ function showShotputData()
 		    mouseY < (r+1)*continuousGapSize+startGapSize+hoverOverGapSize && mouseX > 140 && mouseX < 140+580)
 		{
 			fill(0,255,50);
-			rect(140,(r)*continuousGapSize+startGapSize+hoverOverGapSize,580,25);
+			rect(140,(r)*continuousGapSize+startGapSize+hoverOverGapSize,680,25);
 			fill(0,0,0);
-			
-			// if mouse is pressed toggle the status
-			if (ipad == true)
-			{
-				if (lock == false)
-				{
-					if (shotputdata[r][8] == 1)
-					{
-						shotputdata[r][8] = 2;
-						lock = true;
-					}
-					else
-					{
-						shotputdata[r][8] = 1;
-						lock = true;
-					}
-				
-					// start - submit the data back to the spreadsheet
-					formData = new FormData();
-					formData.append("Sheet Name","Grade"+currentGrade);
-					formData.append("Student ID",shotputdata[r][1]);
-					formData.append("Event",shotputdata[r][3]);
-					formData.append("Ribbon Status",shotputdata[r][8]);
-
-					var request = new XMLHttpRequest();
-
-					// MARK - MUST CHANGE 2
-					request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
-					request.send(formData);
-					// end - submit data back to the spreadsheet
-				}			
-			}
-			else
-			{
-				if (mouseIsPressed && lock == false)
-				{
-					if (shotputdata[r][8] == 1)
-					{
-						shotputdata[r][8] = 2;
-						lock = true;
-					}
-					else
-					{
-						shotputdata[r][8] = 1;
-						lock = true;
-					}
-				
-					// start - submit the data back to the spreadsheet
-					formData = new FormData();
-					formData.append("Sheet Name","Grade"+currentGrade);
-					formData.append("Student ID",shotputdata[r][1]);
-					formData.append("Event",shotputdata[r][3]);
-					formData.append("Ribbon Status",shotputdata[r][8]);
-
-					var request = new XMLHttpRequest();
-
-					// MARK - MUST CHANGE 2
-					request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
-					request.send(formData);
-					// end - submit data back to the spreadsheet
-				}			
-			}
 		}
 		else
 		{
@@ -361,7 +392,42 @@ function showShotputData()
 			{
 				text(shotputdata[r][c],col5+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
+			/*
+			if (c == 10)
+			{
+				text(shotputdata[r][c],col6+moreH,(r+1)*continuousGapSize+startGapSize);
+			}
+			*/
 		}
+		
+//		shotputTextbox[r].value(shotputdata[r][10]);
+		if (shotputSubmitData[r] == 1)
+		{
+//			fill(255,0,0);
+//			rect(col6+moreH+50,(r+1)*continuousGapSize+startGapSize-15,30,21);
+			
+			// -- will get this working later -- need to send an extra parameter to define ribbon or shotputt
+			// start - submit the data back to the spreadsheet
+			formData = new FormData();
+			formData.append("Sheet Name","Grade"+currentGrade);
+			formData.append("Student ID",shotputdata[r][1]);
+			formData.append("Event",shotputdata[r][3]);
+			formData.append("Data",shotputdata[r][10]);
+			formData.append("UpdateEvent","shotputt");
+
+			var request = new XMLHttpRequest();
+
+			// MARK - MUST CHANGE 2
+			request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
+			request.send(formData);
+			// end - submit data back to the spreadsheet
+
+//			shotputTextbox[r].value(shotputdata[r][10]);
+
+			shotputSubmitData[r] = 0;
+			
+		}
+
 	}
 
 
@@ -402,6 +468,7 @@ function showRibbonData()
 	text("Ribbon",col7+moreH,25);
 
 
+	// send data back to the spreadsheet
 	for (var r = 0; r < ribbonRows; r++)
 	{
 		hoverOverGapSize = 8;
@@ -434,7 +501,8 @@ function showRibbonData()
 					formData.append("Sheet Name","Grade"+currentGrade);
 					formData.append("Student ID",ribbondata[r][1]);
 					formData.append("Event",ribbondata[r][3]);
-					formData.append("Ribbon Status",ribbondata[r][8]);
+					formData.append("Data",ribbondata[r][8]);
+					formData.append("UpdateEvent","ribbon");
 
 					var request = new XMLHttpRequest();
 
@@ -464,7 +532,8 @@ function showRibbonData()
 					formData.append("Sheet Name","Grade"+currentGrade);
 					formData.append("Student ID",ribbondata[r][1]);
 					formData.append("Event",ribbondata[r][3]);
-					formData.append("Ribbon Status",ribbondata[r][8]);
+					formData.append("Data",ribbondata[r][8]);
+					formData.append("UpdateEvent","ribbon");
 
 					var request = new XMLHttpRequest();
 

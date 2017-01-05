@@ -110,6 +110,7 @@ function handleQueryResponse(response) {
 		for (var c = 0; c < maxCols; c++)
 		{
 			var info = data.getValue(r,c);
+			
 			if (info == null)
 			{
 				alldata[r][c] = "";
@@ -154,7 +155,7 @@ function handleQueryResponse(response) {
 	shotputdata = new Array(shotputRows);
 	
 	shotputRows = 0;
-	// copy only the ribbon winner data
+	// copy shotputt data
 	for (var r = 0; r < maxRows; r++)
 	{
 		if (alldata[r][3] == "Shot Putt")
@@ -163,7 +164,12 @@ function handleQueryResponse(response) {
 		
 			for (var c = 0; c < maxCols; c++)
 			{
-				shotputdata[shotputRows][c] = alldata[r][c];	
+				if (c == 10 && alldata[r][c] == "")
+				{
+					shotputdata[shotputRows][c] = 0;			
+				}
+				else 
+					shotputdata[shotputRows][c] = alldata[r][c];	
 			}
 			shotputRows++;
 		}
