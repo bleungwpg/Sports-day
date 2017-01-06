@@ -20,7 +20,7 @@ function setup(){
 	createCanvas(1053,1505);
 
 	shotputIsSetup = false;
-	ipad = true;
+	ipad = false;
 	thimble = false;
 	testing = true;
 	dataSubmitted = false;
@@ -418,9 +418,9 @@ function drawButtons()
 		fill(0,0,0);
 		text("Grade "+(b+6),34,39+buttonGap*b);
 		
-		if (ipad == true)
-		{
-			if (mouseX > 10 && mouseX < 10+100 &&
+//		if (ipad == true)
+//		{
+			if ((touchIsDown || mouseIsPressed) && mouseX > 10 && mouseX < 10+100 &&
 			    mouseY > 10+buttonGap*b && mouseY < 10+buttonGap*b+50)
 			{	
 				currentGrade = b+6;
@@ -428,10 +428,11 @@ function drawButtons()
 
 				query.send(handleQueryResponse);
 			}
-		}
-		else
-		{
-			if (mouseIsPressed && mouseX > 10 && mouseX < 10+100 &&
+//		}
+//		else
+//		{
+/*
+			if ((touchIsDown || mouseIsPressed) && mouseX > 10 && mouseX < 10+100 &&
 			    mouseY > 10+buttonGap*b && mouseY < 10+buttonGap*b+50)
 			{
 				currentGrade = b+6;
@@ -439,7 +440,8 @@ function drawButtons()
 
 				query.send(handleQueryResponse);
 			}
-		}
+			*/
+//		}
 	}
 }
 
@@ -738,6 +740,11 @@ function checkUniqueMode() {
 }
 
 function mouseReleased()
+{
+	lock = false;
+}
+
+function touchEnded()
 {
 	lock = false;
 }
