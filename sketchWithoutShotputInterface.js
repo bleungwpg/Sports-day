@@ -7,12 +7,10 @@ var currentGrade;
 var formData;
 var ipad;
 var eventUse;
-var shotputWholeValue;
-var shotputDecimalValue;
-//var shotputSubmitData = [];
+var shotputTextbox = [];
+var shotputSubmitData = [];
 var maxShotputTextbox;
 var shotputIsSetup;
-var currentStudentIndex;
 
 
 function setup(){
@@ -33,40 +31,53 @@ function setup(){
 	lock = false;
 	eventUse = "ribbons";
 	maxShotputTextbox = 200;
-	currentStudentIndex = 0;
 
 	var textboxH = 23;
 	var textboxHGap = 2;
-
-//	shotputSubmitData = new Array(maxShotputTextbox);
+	shotputTextbox = new Array(maxShotputTextbox);
+	shotputSubmitData = new Array(maxShotputTextbox);
 	
 	
-	// setup selection boxes for input
-	shotputWholeValue = createSelect();
-	shotputWholeValue.position(10,10);
-	shotputWholeValue.hide();
 
-	for (var j = 0; j <= 101; j++)
+	for (var i = 0; i < maxShotputTextbox; i++)
 	{
-		shotputWholeValue.option(j);
-	}
-	
-
-	shotputDecimalValue = createSelect();
-	shotputDecimalValue.position(10,10);
-	shotputDecimalValue.hide();
-	
-	for (var j = 0; j < 10; j++)
-	{
-		for (var k = 0; k < 10; k++)
-		{
-			shotputDecimalValue.option(""+j+k);
-		}
-	}
+		shotputTextbox[i] = createSelect();
+		shotputTextbox[i].position(600,i*textboxH+i*textboxHGap+34);
+		//	 shotputTextbox[i].size(100,textboxH);
+		shotputTextbox[i].hide();
 		
 
+//		shotputTextbox[i].option('0.0');
+//		shotputTextbox[i].option('0.1');		
 
 
+		var ones = 0;
+		for (var ones = 0; ones <= 50; ones++)
+		{
+
+			var d1 = 0;
+			for (var d1 = 0; d1 < 10; d1++)
+			{
+//				var d2 = 0;
+//				for (var d2 = 0; d2 < 10; d2++)
+//				{
+					shotputTextbox[i].option(''+ones+'.'+d1);
+//				}		
+			}
+		}
+		
+		shotputTextbox[i].changed(updateShotputData);
+
+
+	/*
+		shotputTextbox[i] = createInput();
+  		shotputTextbox[i].position(600,i*textboxH+i*textboxHGap+34);
+  		shotputTextbox[i].size(100,textboxH);
+  		shotputTextbox[i].hide();
+  		shotputTextbox[i].input(updateShotputData);
+  		*/
+  		shotputSubmitData[i] = 0;
+	}
 
 	// load up all textboxes and buttons in the interface
 	urlinp = createInput();
@@ -129,10 +140,6 @@ function draw(){
 		{
 			showShotputData();
 		}
-		else if (eventUse == "shotputinput")
-		{
-			showShotputInput();
-		}
 //			fill(255,255,255);
 //			text(shotputRows,800,10);
 	}
@@ -159,135 +166,11 @@ function draw(){
 	}
 }
 
-function showShotputInput()
-{
-	background(0,0,0);
-	var y = 50;
-	
-	// show name
-	textSize(25);
-	fill(255,255,255);
-	text(shotputdata[currentStudentIndex][0],300,(currentStudentIndex+1)*continuousGapSize+startGapSize-50+y);
-	
-	
-	// show dropdown data interface
-	fill(255,255,255);
-	text("m",370,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+y);
-	text("mm",475,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+y);
-	
-	
-	
-	
-	if (shotputIsSetup == false)
-	{
-		var d = "00";
-		var w = 0;
-		if (shotputdata[currentStudentIndex][10] != 0)
-		{
-			if (shotputdata[currentStudentIndex][10].toString().indexOf('.') == -1)
-			{
-				w = shotputdata[currentStudentIndex][10].toString();
-				d = "00";
-			}
-			else
-			{
-				w = shotputdata[currentStudentIndex][10].toString().substr(0,shotputdata[currentStudentIndex][10].toString().indexOf('.'));			
-				d = shotputdata[currentStudentIndex][10].toString().substr(shotputdata[currentStudentIndex][10].toString().indexOf('.')+1,shotputdata[currentStudentIndex][10].toString().length);
-				if (shotputdata[currentStudentIndex][10].toString().substr(shotputdata[currentStudentIndex][10].toString().indexOf('.')+1,shotputdata[currentStudentIndex][10].toString().length).length == 1)
-				{
-					d += "0";				
-				}
-				
-			}
-		}
-
-	
-	
-		shotputWholeValue.value(w);
-		shotputDecimalValue.value(d);
-
-	
-//		text("m value: "+w,475,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+50+y);
-//		text("mm value: "+d,475,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+100+y);
-
-	
-		shotputWholeValue.position(305,(currentStudentIndex+1)*continuousGapSize+startGapSize-20+y);
-		shotputWholeValue.show();
-		shotputWholeValue.style("font-size", "14px");
-		shotputWholeValue.size(60,30);
-		shotputDecimalValue.position(410,(currentStudentIndex+1)*continuousGapSize+startGapSize-20+y);
-		shotputDecimalValue.show();
-		shotputDecimalValue.style("font-size", "14px");
-		shotputDecimalValue.size(60,30);
-		
-		shotputIsSetup = true;
-	}
-	
-	var f = shotputWholeValue.value()+"."+shotputDecimalValue.value();
-	
-//	text("final value: "+f,475,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+150+y);
-	
-	// show done button
-	textSize(14);
-	fill(255,255,0);
-	rect(545,(currentStudentIndex+1)*continuousGapSize+startGapSize-20+y,100,30);
-	fill(0,0,0);
-	text("Done",575,(currentStudentIndex+1)*continuousGapSize+startGapSize+y);
-	
-	if (ipad)
-	{
-		if (lock == false && mouseX > 545 && mouseX < 545+100 && mouseY > (currentStudentIndex+1)*continuousGapSize+startGapSize-20+y && mouseY < (currentStudentIndex+1)*continuousGapSize+startGapSize-20+50+y)
-		{
-			eventUse = "shotput";
-			lock = true;
-			shotputWholeValue.hide();
-			shotputDecimalValue.hide();
-			shotputdata[currentStudentIndex][10] = f;
-			shotputIsSetup = false;
-			sendShotputData(f);
-		}
-	}
-	else
-	{
-		if (lock == false && mouseIsPressed && mouseX > 545 && mouseX < 545+100 && mouseY > (currentStudentIndex+1)*continuousGapSize+startGapSize-20+y && mouseY < (currentStudentIndex+1)*continuousGapSize+startGapSize-20+50+y)
-		{
-			eventUse = "shotput";
-			lock = true;
-			shotputWholeValue.hide();
-			shotputDecimalValue.hide();
-			shotputdata[currentStudentIndex][10] = f;
-			shotputIsSetup = false;
-			sendShotputData(f);
-		}
-	}
-
-}
-
-function sendShotputData(newShotputtData)
-{
-	// start - submit the data back to the spreadsheet
-	formData = new FormData();
-	formData.append("Sheet Name","Grade"+currentGrade);
-	formData.append("Student ID",shotputdata[currentStudentIndex][1]);
-	formData.append("Event",shotputdata[currentStudentIndex][3]);
-//	formData.append("Data",shotputdata[currentStudentIndex][10]);
-	formData.append("Data",newShotputtData);
-	formData.append("UpdateEvent","shotputt");
-
-	var request = new XMLHttpRequest();
-
-	// MARK - MUST CHANGE 2
-	request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
-	request.send(formData);
-	// end - submit data back to the spreadsheet	
-}
-
-/*
 function closeShotput()
 {
 	for (var i = 0; i < maxShotputTextbox; i++)
 	{
-		shotputWholeValue[i].hide();
+		shotputTextbox[i].hide();
 	}
 	shotputIsSetup = false;
 }
@@ -299,16 +182,15 @@ function setupShotput()
 	{
 		if (i < shotputRows)
 		{
-			shotputWholeValue[i].value(shotputdata[i][10]);
-			shotputWholeValue[i].show();
+			shotputTextbox[i].value(shotputdata[i][10]);
+			shotputTextbox[i].show();
 		}	
 		else
-			shotputWholeValue[i].hide();
+			shotputTextbox[i].hide();
 	}
 	shotputIsSetup = true;
 }
-*/
-/*
+
 function updateShotputData()
 {
 
@@ -316,12 +198,12 @@ function updateShotputData()
 	{
 		fill(255,255,255);
 //		text(shotputdata[i][10],700,70+i*23+i*2);
-//		text(shotputWholeValue[i].value(),700,70+i*23+i*2);
+//		text(shotputTextbox[i].value(),700,70+i*23+i*2);
 		
 		
-		if (shotputdata[i][10] != shotputWholeValue[i].value())
+		if (shotputdata[i][10] != shotputTextbox[i].value())
 		{
-			shotputdata[i][10] = shotputWholeValue[i].value();
+			shotputdata[i][10] = shotputTextbox[i].value();
 			shotputSubmitData[i] = 1;
 //			fill(255,255,255);
 //			rect(800,90,100,100);
@@ -329,7 +211,6 @@ function updateShotputData()
 	
 	}
 }
-*/
 
 // Create buttons from grades 6 - 12
 // handle what happens when you click on buttons
@@ -357,7 +238,7 @@ function drawButtons()
 			mouseY > 10+buttonGap*8 && mouseY < 10+buttonGap*8+50)
 		{
 			eventUse = "ribbons";
-//			closeShotput();
+			closeShotput();
 		}
 	}
 	else
@@ -366,7 +247,7 @@ function drawButtons()
 			mouseY > 10+buttonGap*8 && mouseY < 10+buttonGap*8+50)
 		{
 			eventUse = "ribbons";
-//			closeShotput();
+			closeShotput();
 		}
 	}
 
@@ -390,7 +271,7 @@ function drawButtons()
 			mouseY > 10+buttonGap*9 && mouseY < 10+buttonGap*9+50)
 		{
 			eventUse = "shotput";
-//			setupShshotputWholeValueotput();
+			setupShotput();
 		}
 	}
 	else
@@ -399,7 +280,7 @@ function drawButtons()
 			mouseY > 10+buttonGap*9 && mouseY < 10+buttonGap*9+50)
 		{
 			eventUse = "shotput";
-//			setupShotput();
+			setupShotput();
 		}
 	}
 
@@ -467,12 +348,10 @@ function showShotputData()
 	text("Gender",col5+moreH,25);
 	text("Shotputt",col6+moreH,25);
 
-/*
 	if (eventUse == "shotput" && shotputIsSetup == false)
 	{
 		setupShotput();
 	}
-	*/
 	for (var r = 0; r < shotputRows; r++)
 	{
 		hoverOverGapSize = 8;
@@ -483,27 +362,6 @@ function showShotputData()
 			fill(0,255,50);
 			rect(140,(r)*continuousGapSize+startGapSize+hoverOverGapSize,680,25);
 			fill(0,0,0);
-			
-			// if mouse is pressed pull up shotputinput interface
-			// end the loop and setup currentStudentIndex
-			if (ipad == true)
-			{
-				eventUse = "shotputinput";
-				currentStudentIndex = r;
-				lock = true;
-				break;
-			}
-			else
-			{
-				if (mouseIsPressed && lock == false)
-				{
-					eventUse = "shotputinput";
-					currentStudentIndex = r;
-					lock = true;
-					break;
-				}
-			}
-
 		}
 		else
 		{
@@ -534,18 +392,41 @@ function showShotputData()
 			{
 				text(shotputdata[r][c],col5+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
-			
+			/*
 			if (c == 10)
 			{
-				if (shotputdata[r][c].toString().length == 4)
-					text(shotputdata[r][c],col6+moreH+6,(r+1)*continuousGapSize+startGapSize);
-				else
-					text(shotputdata[r][c],col6+moreH,(r+1)*continuousGapSize+startGapSize);
+				text(shotputdata[r][c],col6+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
-			
+			*/
 		}
 		
-//		shotputWholeValue[r].value(shotputdata[r][10]);
+//		shotputTextbox[r].value(shotputdata[r][10]);
+		if (shotputSubmitData[r] == 1)
+		{
+//			fill(255,0,0);
+//			rect(col6+moreH+50,(r+1)*continuousGapSize+startGapSize-15,30,21);
+			
+			// -- will get this working later -- need to send an extra parameter to define ribbon or shotputt
+			// start - submit the data back to the spreadsheet
+			formData = new FormData();
+			formData.append("Sheet Name","Grade"+currentGrade);
+			formData.append("Student ID",shotputdata[r][1]);
+			formData.append("Event",shotputdata[r][3]);
+			formData.append("Data",shotputdata[r][10]);
+			formData.append("UpdateEvent","shotputt");
+
+			var request = new XMLHttpRequest();
+
+			// MARK - MUST CHANGE 2
+			request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
+			request.send(formData);
+			// end - submit data back to the spreadsheet
+
+//			shotputTextbox[r].value(shotputdata[r][10]);
+
+			shotputSubmitData[r] = 0;
+			
+		}
 
 	}
 

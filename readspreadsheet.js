@@ -166,10 +166,37 @@ function handleQueryResponse(response) {
 			{
 				if (c == 10 && alldata[r][c] == "")
 				{
-					shotputdata[shotputRows][c] = 0;			
+					shotputdata[shotputRows][c] = "0.00";			
 				}
 				else 
-					shotputdata[shotputRows][c] = alldata[r][c];	
+				{
+					if (c == 10)
+					{
+						var d = "00";
+						var w = 0;
+						if (alldata[r][10] != 0)
+						{
+							if (alldata[r][10].toString().indexOf('.') == -1)
+							{
+								w = alldata[r][10].toString();
+								d = "00";
+							}
+							else
+							{
+								w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+								d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+								if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+								{
+									d += "0";				
+								}
+				
+							}
+						}
+						shotputdata[shotputRows][c] = w+"."+d;	
+					}
+					else
+						shotputdata[shotputRows][c] = alldata[r][c];	
+				}
 			}
 			shotputRows++;
 		}
