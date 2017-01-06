@@ -20,7 +20,7 @@ function setup(){
 	createCanvas(1053,1505);
 
 	shotputIsSetup = false;
-	ipad = false;
+	ipad = true;
 	thimble = false;
 	testing = true;
 	dataSubmitted = false;
@@ -579,12 +579,12 @@ function showRibbonData()
 	fill(255,255,255);
 	moreH = 125;
 	text("Name",col1+moreH,25);
-	text("Student ID",col2+moreH,25);
+	text("Ribbon",col2+moreH,25);
 	text("House",col3+moreH,25);
 	text("Event",col4+moreH,25);
 	text("Gender",col5+moreH,25);
 	text("Place",col6+moreH,25);
-	text("Ribbon",col7+moreH,25);
+//	text("Ribbon",col7+moreH,25);
 
 
 	// send data back to the spreadsheet
@@ -599,69 +599,74 @@ function showRibbonData()
 			rect(140,(r)*continuousGapSize+startGapSize+hoverOverGapSize,580,25);
 			fill(0,0,0);
 			
-			// if mouse is pressed toggle the status
-			if (ipad == true)
+			
+			// if you touch on the name then toggle Ribbon data
+			if (mouseX > 140 && mouseX < 140+200)
 			{
-				if (lock == false)
+				// if mouse is pressed toggle the status
+				if (ipad == true)
 				{
-					if (ribbondata[r][8] == 1)
+					if (lock == false)
 					{
-						ribbondata[r][8] = 2;
-						lock = true;
-					}
-					else
-					{
-						ribbondata[r][8] = 1;
-						lock = true;
-					}
+						if (ribbondata[r][8] == 1)
+						{
+							ribbondata[r][8] = 2;
+							lock = true;
+						}
+						else
+						{
+							ribbondata[r][8] = 1;
+							lock = true;
+						}
 				
-					// start - submit the data back to the spreadsheet
-					formData = new FormData();
-					formData.append("Sheet Name","Grade"+currentGrade);
-					formData.append("Student ID",ribbondata[r][1]);
-					formData.append("Event",ribbondata[r][3]);
-					formData.append("Data",ribbondata[r][8]);
-					formData.append("UpdateEvent","ribbon");
+						// start - submit the data back to the spreadsheet
+						formData = new FormData();
+						formData.append("Sheet Name","Grade"+currentGrade);
+						formData.append("Student ID",ribbondata[r][1]);
+						formData.append("Event",ribbondata[r][3]);
+						formData.append("Data",ribbondata[r][8]);
+						formData.append("UpdateEvent","ribbon");
 
-					var request = new XMLHttpRequest();
+						var request = new XMLHttpRequest();
 
-					// MARK - MUST CHANGE 2
-					request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
-					request.send(formData);
-					// end - submit data back to the spreadsheet
-				}			
-			}
-			else
-			{
-				if (mouseIsPressed && lock == false)
+						// MARK - MUST CHANGE 2
+						request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
+						request.send(formData);
+						// end - submit data back to the spreadsheet
+					}			
+				}
+				else
 				{
-					if (ribbondata[r][8] == 1)
+					if (mouseIsPressed && lock == false)
 					{
-						ribbondata[r][8] = 2;
-						lock = true;
-					}
-					else
-					{
-						ribbondata[r][8] = 1;
-						lock = true;
-					}
+						if (ribbondata[r][8] == 1)
+						{
+							ribbondata[r][8] = 2;
+							lock = true;
+						}
+						else
+						{
+							ribbondata[r][8] = 1;
+							lock = true;
+						}
 				
-					// start - submit the data back to the spreadsheet
-					formData = new FormData();
-					formData.append("Sheet Name","Grade"+currentGrade);
-					formData.append("Student ID",ribbondata[r][1]);
-					formData.append("Event",ribbondata[r][3]);
-					formData.append("Data",ribbondata[r][8]);
-					formData.append("UpdateEvent","ribbon");
+						// start - submit the data back to the spreadsheet
+						formData = new FormData();
+						formData.append("Sheet Name","Grade"+currentGrade);
+						formData.append("Student ID",ribbondata[r][1]);
+						formData.append("Event",ribbondata[r][3]);
+						formData.append("Data",ribbondata[r][8]);
+						formData.append("UpdateEvent","ribbon");
 
-					var request = new XMLHttpRequest();
+						var request = new XMLHttpRequest();
 
-					// MARK - MUST CHANGE 2
-					request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
-					request.send(formData);
-					// end - submit data back to the spreadsheet
-				}			
-			}
+						// MARK - MUST CHANGE 2
+						request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
+						request.send(formData);
+						// end - submit data back to the spreadsheet
+					}			
+				}
+			} // if you touched name
 		}
 		else
 		{
@@ -676,10 +681,12 @@ function showRibbonData()
 			{
 				text(ribbondata[r][c],col1+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
+			/*
 			if (c == 1)
 			{
 				text(ribbondata[r][c],col2+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
+			*/
 			if (c == 2)
 			{
 				text(ribbondata[r][c],col3+moreH,(r+1)*continuousGapSize+startGapSize);
@@ -700,11 +707,11 @@ function showRibbonData()
 			{
 				if (ribbondata[r][c] == 1)
 				{
-					text("Earned",col7+moreH,(r+1)*continuousGapSize+startGapSize);
+					text("Earned",col2+moreH,(r+1)*continuousGapSize+startGapSize);
 				}
 				else if (ribbondata[r][c] == 2)
 				{
-					text("Given",col7+moreH,(r+1)*continuousGapSize+startGapSize);
+					text("Given",col2+moreH,(r+1)*continuousGapSize+startGapSize);
 				}
 			}
 		}
