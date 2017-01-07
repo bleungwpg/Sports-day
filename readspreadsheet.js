@@ -2,13 +2,15 @@ google.load("visualization", "1", {packages:["corechart"]});
 
 var alldata = [[]];
 var ribbondata = [[]];
+var housedata = [[]];
 var eventData = [[[]]];
 var maxRows;
 var maxCols;
 var ribbonRows;
+var houseRows;
 var eventRows = [];
 var inp;
-var startGapSize = 25;
+var startGapSize = 75;
 var continuousGapSize = 25;
 var spreadsheetID;
 var sheetID;
@@ -53,11 +55,94 @@ function showData()
 
 }
 
+function pullHouseData()
+{
+	// parse sheet ID and tab ID
+	wholehyperlink = "https://docs.google.com/spreadsheets/d/1CGxETFmlqy4lYYhtWcIMd7COtW9MR11EN0YI47XcvCk/edit#gid=1021250630";
+
+	startID = wholehyperlink.search("spreadsheets/d/");
+	spreadsheetID = wholehyperlink.substring(startID+15,startID+65);
+	spreadsheetID = spreadsheetID.substring(0,spreadsheetID.indexOf("/"));
+	
+	startID = wholehyperlink.search("gid=");
+	sheetID = wholehyperlink.substring(startID+4,wholehyperlink.length);
+
+	var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=HousePoints'+'&tq=SELECT*');
+//	var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/1CGxETFmlqy4lYYhtWcIMd7COtW9MR11EN0YI47XcvCk/gviz/tq?sheet=Grade6&tq=SELECT*');
+
+
+    query.send(handleHouseQueryResponse);
+}
+
+// Called when the query response is returned.
+function handleHouseQueryResponse(response) {
+
+	if (testing == true)
+	{
+		console.log("Pulling House Data");
+	}
+	
+	if (response.isError()) {
+		alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+		return;
+	}
+
+
+	var data = response.getDataTable();
+
+	maxRows = data.getNumberOfRows();
+	maxCols = data.getNumberOfColumns();
+
+
+	if (testing == true)
+	{
+		console.log('There are '+maxRows+' rows');
+		console.log('There are '+maxCols+' cols');	
+	}
+
+	houseRows = maxRows;
+	
+
+
+	for (var r = 0; r < maxRows; r++)
+	{
+		alldata[r] = new Array(maxCols);
+		for (var c = 0; c < maxCols; c++)
+		{
+			var info = data.getValue(r,c);
+			
+			if (info == null)
+			{
+				alldata[r][c] = "";
+			}
+			else
+			{
+				alldata[r][c] = info;	
+			}
+		}
+	}
+	
+	housedata = new Array(houseRows);
+	
+	// copy house data
+	for (var r = 0; r < maxRows; r++)
+	{
+		housedata[r] = new Array(3);
+	
+		for (var c = 0; c < 3; c++)
+		{
+			housedata[r][c] = alldata[r][c+7];	
+		}
+	}
+
+}
+
 
 function pullData()
 {
 	// parse sheet ID and tab ID
-	wholehyperlink = urlinp.value();
+	wholehyperlink = "https://docs.google.com/spreadsheets/d/1CGxETFmlqy4lYYhtWcIMd7COtW9MR11EN0YI47XcvCk/edit#gid=1021250630";
+
 	startID = wholehyperlink.search("spreadsheets/d/");
 	spreadsheetID = wholehyperlink.substring(startID+15,startID+65);
 	spreadsheetID = spreadsheetID.substring(0,spreadsheetID.indexOf("/"));
@@ -98,7 +183,7 @@ function handleQueryResponse(response) {
 		console.log('There are '+maxCols+' cols');	
 	}
 
-	var maxEvent = 3;
+	var maxEvent = 6;
 
 	var rowdata = new Array(maxCols);
 	alldata = new Array(maxRows);
@@ -140,6 +225,19 @@ function handleQueryResponse(response) {
 			{
 				eventRows[2]++;
 			}
+			if (alldata[r][3] == "100m")
+			{
+				eventRows[3]++;
+			}
+			if (alldata[r][3] == "200m")
+			{
+				eventRows[4]++;
+			}
+			if (alldata[r][3] == "400m")
+			{
+				eventRows[5]++;
+			}
+
 			
 			// if they are ribbon winners add one to count
 			if (alldata[r][8] == 1 || alldata[r][8] == 2)
@@ -314,6 +412,135 @@ function handleQueryResponse(response) {
 				eventRows[x]++;
 			} // if discus
 
+
+			if (x == 3 && alldata[r][3] == "100m")
+			{
+				eventData[x][eventRows[x]] = new Array(maxCols);
+		
+				for (var c = 0; c < maxCols; c++)
+				{
+					if (c == 10 && alldata[r][c] == "")
+					{
+						eventData[x][eventRows[x]][c] = "0.00";			
+					}
+					else 
+					{
+						if (c == 10)
+						{
+							var d = "00";
+							var w = 0;
+							if (alldata[r][10] != 0)
+							{
+								if (alldata[r][10].toString().indexOf('.') == -1)
+								{
+									w = alldata[r][10].toString();
+									d = "00";
+								}
+								else
+								{
+									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+									{
+										d += "0";				
+									}
+				
+								}
+							}
+							eventData[x][eventRows[x]][c] = w+"."+d;	
+						}
+						else
+							eventData[x][eventRows[x]][c] = alldata[r][c];	
+					}
+				}
+				eventRows[x]++;
+			} // 100m
+			
+			if (x == 4 && alldata[r][3] == "200m")
+			{
+				eventData[x][eventRows[x]] = new Array(maxCols);
+		
+				for (var c = 0; c < maxCols; c++)
+				{
+					if (c == 10 && alldata[r][c] == "")
+					{
+						eventData[x][eventRows[x]][c] = "0.00";			
+					}
+					else 
+					{
+						if (c == 10)
+						{
+							var d = "00";
+							var w = 0;
+							if (alldata[r][10] != 0)
+							{
+								if (alldata[r][10].toString().indexOf('.') == -1)
+								{
+									w = alldata[r][10].toString();
+									d = "00";
+								}
+								else
+								{
+									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+									{
+										d += "0";				
+									}
+				
+								}
+							}
+							eventData[x][eventRows[x]][c] = w+"."+d;	
+						}
+						else
+							eventData[x][eventRows[x]][c] = alldata[r][c];	
+					}
+				}
+				eventRows[x]++;
+			} // if 200m
+			
+			if (x == 5 && alldata[r][3] == "400m")
+			{
+				eventData[x][eventRows[x]] = new Array(maxCols);
+		
+				for (var c = 0; c < maxCols; c++)
+				{
+					if (c == 10 && alldata[r][c] == "")
+					{
+						eventData[x][eventRows[x]][c] = "0.00";			
+					}
+					else 
+					{
+						if (c == 10)
+						{
+							var d = "00";
+							var w = 0;
+							if (alldata[r][10] != 0)
+							{
+								if (alldata[r][10].toString().indexOf('.') == -1)
+								{
+									w = alldata[r][10].toString();
+									d = "00";
+								}
+								else
+								{
+									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+									{
+										d += "0";				
+									}
+				
+								}
+							}
+							eventData[x][eventRows[x]][c] = w+"."+d;	
+						}
+						else
+							eventData[x][eventRows[x]][c] = alldata[r][c];	
+					}
+				}
+				eventRows[x]++;
+			} // if 400m
 
 		} // for each row in the event
 	} // for all events

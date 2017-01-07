@@ -33,6 +33,7 @@ function setup(){
 	once = true;
 	currentGrade = 6;
 	lock = false;
+//	eventUse = "housedata";
 	eventUse = "ribbons";
 	currentStudentIndex = 0;
 	eventID = 0;
@@ -71,10 +72,12 @@ function setup(){
 	// load up all textboxes and buttons in the interface
 	urlinp = createInput();
 	urlinp.position(10,40);
-	urlinp.size(300,25);  
+	urlinp.size(300,25);
+	urlinp.hide();  
 	submitbutton = createButton('submit');
 	submitbutton.position(400, 105);
 	submitbutton.mousePressed(pullData);
+	submitbutton.hide();
 	
 	if (testing == true)
 	{
@@ -126,30 +129,319 @@ function draw(){
 		{
 			showEventData(2);
 		}
+		else if (eventUse == "100m")
+		{
+			showEventData(3);
+		}
+		else if (eventUse == "200m")
+		{
+			showEventData(4);
+		}
+		else if (eventUse == "400m")
+		{
+			showEventData(5);
+		}
+		else if (eventUse == "event menu")
+		{
+			background(0,0,0);
+			showEventMenu();
+		}
+		else if (eventUse == "housedata")
+		{
+			showHouseData();
+		}
+
+
 
 //			fill(255,255,255);
 //			text(eventRows[showEvent],800,10);
 	}
 	else
 	{
-		background(255,255,255);
-		// Prompt to enter your spreadsheet URL
+		background(0,0,0);
 		fill(0,0,0);
-		if (thimble == true)
+	}
+}
+
+function showHouseData()
+{
+	background(0,0,0);
+	
+	showEventMenu();
+	
+	textSize(25);
+	fill(255,255,255);
+	text("House Data",300,40);
+
+	textSize(12);
+	// show data
+	col1 = 120;
+	col2 = 220;
+	col3 = 320;
+
+
+	fill(255,255,255);
+	moreH = 155;
+	
+	textSize(16);
+	text("Dragons",col1+moreH,startGapSize);
+	text("Phoenix",col2+moreH,startGapSize);
+	text("Tigers",col3+moreH,startGapSize);
+
+
+	// show data
+	for (var r = 0; r < houseRows-1; r++)
+	{
+		hoverOverGapSize = 7;
+		// highlight where the mouse hovering over with a green background
+		if (mouseY > (r)*continuousGapSize+startGapSize+hoverOverGapSize && 
+		    mouseY < (r+1)*continuousGapSize+startGapSize+hoverOverGapSize && mouseX > 160 && mouseX < 160+370)
 		{
-			text("Enter your spreadsheet URL",10,13);
+			fill(0,255,50);
+			rect(160,(r)*continuousGapSize+startGapSize+hoverOverGapSize,370,25);
+			fill(0,0,0);
 		}
 		else
 		{
-			text("Enter your spreadsheet URL",10,33);
+			fill(255,255,255);
 		}
 
-		if (testing == true)
+		// populate data
+		for (var c = 0; c < 3; c++)
 		{
-			text("URL: "+wholehyperlink,10,300);
-			text("spreadsheetID: "+spreadsheetID,10,325);
-			text("sheetID: "+sheetID,10,350);
+			text(housedata[r][c],c*100+moreH+130,(r+1)*continuousGapSize+startGapSize);
 		}
+		if (r < houseRows-2)
+			text("Grade"+(r+6),col3-150,(r+1)*continuousGapSize+startGapSize);
+		if (r == houseRows-2)
+			text("Total",col3-150,(r+1)*continuousGapSize+startGapSize);
+	}
+	textSize(12);
+}
+
+function showEventMenu()
+{
+	buttonGap = 60;
+
+	// ------------- IF ribbon button is pressed setup -------------	
+	if (eventUse == "ribbons")
+	{
+		fill(255,255,0);
+	}
+	else
+	{
+		fill(255,255,255);	
+	}
+	
+	rect(10,10+buttonGap*1,100,50);
+	fill(0,0,0);
+	text("Medalists",34,39+buttonGap*1);
+
+
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+		mouseY > 10+buttonGap*1 && mouseY < 10+buttonGap*1+50)
+	{
+		eventUse = "ribbons";
+		var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+		query.send(handleQueryResponse);
+		lock = true;
+	}
+
+
+	// ------------- IF shotput button is pressed setup -------------	
+	if (eventUse == "shotput")
+	{
+		fill(255,255,0);
+	}
+	else
+	{
+		fill(255,255,255);	
+	}
+	
+	rect(10,10+buttonGap*2,100,50);
+	fill(0,0,0);
+	text("Shot Putt",34,39+buttonGap*2);
+
+
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+		mouseY > 10+buttonGap*2 && mouseY < 10+buttonGap*2+50)
+	{
+		eventUse = "shotput";
+		eventID = 0;
+		var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+		query.send(handleQueryResponse);
+		lock = true;
+	}
+
+
+	// ------------- IF long jump button is pressed setup -------------	
+	if (eventUse == "long jump")
+	{
+		fill(255,255,0);
+	}
+	else
+	{
+		fill(255,255,255);	
+	}
+	
+	rect(10,10+buttonGap*3,100,50);
+	fill(0,0,0);
+	text("Long Jump",34,39+buttonGap*3);
+
+
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+		mouseY > 10+buttonGap*3 && mouseY < 10+buttonGap*3+50)
+	{
+		eventUse = "long jump";
+		eventID = 1;
+		var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+		query.send(handleQueryResponse);
+		lock = true;
+	}
+
+
+	// ------------- IF discus button is pressed setup -------------	
+	
+	if (eventUse == "discus")
+	{
+		fill(255,255,0);
+	}
+	else
+	{
+		fill(255,255,255);	
+	}
+	
+	rect(10,10+buttonGap*4,100,50);
+	fill(0,0,0);
+	text("Discus",34,39+buttonGap*4);
+
+
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+		mouseY > 10+buttonGap*4 && mouseY < 10+buttonGap*4+50)
+	{
+		eventUse = "discus";
+		eventID = 2;
+		var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+		query.send(handleQueryResponse);
+		lock = true;
+	}
+
+
+	// ------------- IF 100m button is pressed setup -------------	
+	
+	if (eventUse == "100m")
+	{
+		fill(255,255,0);
+	}
+	else
+	{
+		fill(255,255,255);	
+	}
+	
+	rect(10,10+buttonGap*5,100,50);
+	fill(0,0,0);
+	text("100m",34,39+buttonGap*5);
+
+
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+		mouseY > 10+buttonGap*5 && mouseY < 10+buttonGap*5+50)
+	{
+		eventUse = "100m";
+		eventID = 3;
+		var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+		query.send(handleQueryResponse);
+		lock = true;
+	}
+
+
+	// ------------- IF 200m button is pressed setup -------------	
+	
+	if (eventUse == "200m")
+	{
+		fill(255,255,0);
+	}
+	else
+	{
+		fill(255,255,255);	
+	}
+	
+	rect(10,10+buttonGap*6,100,50);
+	fill(0,0,0);
+	text("200m",34,39+buttonGap*6);
+
+
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+		mouseY > 10+buttonGap*6 && mouseY < 10+buttonGap*6+50)
+	{
+		eventUse = "200m";
+		eventID = 4;
+		var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+		query.send(handleQueryResponse);
+		lock = true;
+	}
+
+
+	// ------------- IF 400m button is pressed setup -------------	
+	
+	if (eventUse == "400m")
+	{
+		fill(255,255,0);
+	}
+	else
+	{
+		fill(255,255,255);	
+	}
+	
+	rect(10,10+buttonGap*7,100,50);
+	fill(0,0,0);
+	text("400m",34,39+buttonGap*7);
+
+
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+		mouseY > 10+buttonGap*7 && mouseY < 10+buttonGap*7+50)
+	{
+		eventUse = "400m";
+		eventID = 5;
+		var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+		query.send(handleQueryResponse);
+		lock = true;
+	}
+	
+	// ------------- IF house data button is pressed setup -------------	
+	
+	if (eventUse == "housedata")
+	{
+		fill(255,255,0);
+	}
+	else
+	{
+		fill(255,255,255);	
+	}
+	
+	rect(10,10+buttonGap*8,100,50);
+	fill(0,0,0);
+	text("House Points",25,39+buttonGap*8);
+
+
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+		mouseY > 10+buttonGap*8 && mouseY < 10+buttonGap*8+50)
+	{
+		eventUse = "housedata";
+		pullHouseData();
+		lock = true;
+	}
+
+	// ------------- IF Other Event button is pressed setup -------------	
+	fill(141,252,255);
+	rect(10,10,100,50);
+	fill(0,0,0);
+	text("Other Events",26,39);
+	
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+		mouseY > 10 && mouseY < 10+50)
+	{
+		eventUse = "event menu";
+		lock = true;
 	}
 }
 
@@ -237,6 +529,14 @@ function showInputDataInterface()
 			eventUse = "long jump";
 		else if (eventID == 2)
 			eventUse = "discus";
+		else if (eventID == 3)
+			eventUse = "100m";
+		else if (eventID == 4)
+			eventUse = "200m";
+		else if (eventID == 5)
+			eventUse = "400m";
+
+
 			
 		lock = true;
 		shotputWholeValue.hide();
@@ -264,6 +564,12 @@ function sendShotputData(newShotputtData)
 		formData.append("UpdateEvent","long jump");
 	else if (eventID == 2)
 		formData.append("UpdateEvent","discus");
+	else if (eventID == 3)
+		formData.append("UpdateEvent","100m");
+	else if (eventID == 4)
+		formData.append("UpdateEvent","200m");
+	else if (eventID == 5)
+		formData.append("UpdateEvent","400m");
 
 
 	var request = new XMLHttpRequest();
@@ -279,99 +585,7 @@ function sendShotputData(newShotputtData)
 // handle what happens when you click on buttons
 function drawButtons()
 {
-	buttonGap = 60;
-
-	// ------------- IF ribbon button is pressed setup -------------	
-	if (eventUse == "ribbons")
-	{
-		fill(255,255,0);
-	}
-	else
-	{
-		fill(255,255,255);	
-	}
-	
-	rect(10,10+buttonGap*8,100,50);
-	fill(0,0,0);
-	text("Ribbons",34,39+buttonGap*8);
-
-
-	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
-		mouseY > 10+buttonGap*8 && mouseY < 10+buttonGap*8+50)
-	{
-		eventUse = "ribbons";
-	}
-
-
-	// ------------- IF shotput button is pressed setup -------------	
-	if (eventUse == "shotput")
-	{
-		fill(255,255,0);
-	}
-	else
-	{
-		fill(255,255,255);	
-	}
-	
-	rect(10,10+buttonGap*9,100,50);
-	fill(0,0,0);
-	text("Shotput",34,39+buttonGap*9);
-
-
-	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
-		mouseY > 10+buttonGap*9 && mouseY < 10+buttonGap*9+50)
-	{
-		eventUse = "shotput";
-		eventID = 1;
-	}
-
-
-	// ------------- IF long jump button is pressed setup -------------	
-	if (eventUse == "long jump")
-	{
-		fill(255,255,0);
-	}
-	else
-	{
-		fill(255,255,255);	
-	}
-	
-	rect(10,10+buttonGap*10,100,50);
-	fill(0,0,0);
-	text("Long Jump",34,39+buttonGap*10);
-
-
-	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
-		mouseY > 10+buttonGap*10 && mouseY < 10+buttonGap*10+50)
-	{
-		eventUse = "long jump";
-		eventID = 1;
-	}
-
-
-	// ------------- IF discus button is pressed setup -------------	
-	
-	if (eventUse == "discus")
-	{
-		fill(255,255,0);
-	}
-	else
-	{
-		fill(255,255,255);	
-	}
-	
-	rect(10,10+buttonGap*11,100,50);
-	fill(0,0,0);
-	text("Discus",34,39+buttonGap*11);
-
-
-	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
-		mouseY > 10+buttonGap*11 && mouseY < 10+buttonGap*11+50)
-	{
-		eventUse = "discus";
-		eventID = 1;
-	}
-
+	var buttonGap = 60;
 
 	// ---------------------- IF Grade level button is pressed --------------------
 	for (var b = 0; b < 7; b++)
@@ -384,13 +598,13 @@ function drawButtons()
 		{
 			fill(255,255,255);
 		}
-		rect(10,10+buttonGap*b,100,50);
+		rect(10,10+buttonGap*(b+1),100,50);
 		fill(0,0,0);
-		text("Grade "+(b+6),34,39+buttonGap*b);
+		text("Grade "+(b+6),34,39+buttonGap*(b+1));
 		
 
 		if ((touchIsDown || mouseIsPressed) && !lock && mouseX > 10 && mouseX < 10+100 &&
-			mouseY > 10+buttonGap*b && mouseY < 10+buttonGap*b+50)
+			mouseY > 10+buttonGap*(b+1) && mouseY < 10+buttonGap*(b+1)+50)
 		{	
 			currentGrade = b+6;
 			var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
@@ -398,8 +612,20 @@ function drawButtons()
 			query.send(handleQueryResponse);
 			lock = true;
 		}
-
 	}
+	
+	fill(141,252,255);
+	rect(10,10,100,50);
+	fill(0,0,0);
+	text("Other Events",26,39);
+	
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+		mouseY > 10 && mouseY < 10+50)
+	{
+		eventUse = "event menu";
+		lock = true;
+	}
+
 }
 
 function showEventData(showEvent)
@@ -415,24 +641,50 @@ function showEventData(showEvent)
 	col3 = 230;
 	col4 = 300;
 	col5 = 390;
-	col6 = 460;
+//	col6 = 460;
 
 	fill(255,255,255);
 	moreH = 125;
+	var addHeight = 50;
 
-	text("Name",col1+moreH,25);
-	text("Student ID",col3+moreH,25);
-	text("House",col4+moreH,25);
-	text("Event",col5+moreH,25);
-	text("Gender",col6+moreH,25);
+	text("Name",col1+moreH,startGapSize);
+	text("Data",col2+moreH+3,startGapSize);
+	text("Student ID",col3+moreH,startGapSize);
+	text("House",col4+moreH,startGapSize);
+	text("Gender",col5+moreH,startGapSize);
+//	text("Event",col6+moreH,startGapSize);
 
+	textSize(25);
 	if (showEvent == 0)
-		text("Shotputt",col2+moreH,25);
+		text("Shot Putt",300,40);
 	else if (showEvent == 1)
-		text("Long Jump",col2+moreH,25);
+		text("Long Jump",300,40);
 	else if (showEvent == 2)
-		text("Discus",col2+moreH,25);
+		text("Discus",300,40);
+	else if (showEvent == 3)
+		text("100m",300,40);
+	else if (showEvent == 4)
+		text("200m",300,40);
+	else if (showEvent == 5)
+		text("400m",300,40);
 
+	textSize(12);
+
+
+/*
+	if (showEvent == 0)
+		text("Shotputt",col2+moreH,startGapSize);
+	else if (showEvent == 1)
+		text("Long Jump",col2+moreH,startGapSize);
+	else if (showEvent == 2)
+		text("Discus",col2+moreH,startGapSize);
+	else if (showEvent == 3)
+		text("100m",col2+moreH,startGapSize);
+	else if (showEvent == 4)
+		text("200m",col2+moreH,startGapSize);
+	else if (showEvent == 5)
+		text("400m",col2+moreH,startGapSize);
+*/
 
 
 	var gold = [];
@@ -485,13 +737,15 @@ function showEventData(showEvent)
 			{
 				text(eventData[showEvent][r][c],col4+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
+			/*
 			if (c == 3)
 			{
 				text(eventData[showEvent][r][c],col5+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
+			*/
 			if (c == 4)
 			{
-				text(eventData[showEvent][r][c],col6+moreH,(r+1)*continuousGapSize+startGapSize);
+				text(eventData[showEvent][r][c],col5+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
 			
 			if (c == 10)
@@ -650,14 +904,11 @@ function showRibbonData()
 	// draw button
 	drawButtons();
 
-	
-	// show checkbox
-	/*
-	checkbox.show();
+	textSize(25);
 	fill(255,255,255);
-	text("Unique mode",32,504);
-	*/
+	text("Medalists - Grade "+currentGrade,300,40);
 
+	textSize(12);
 	// show data
 	col1 = 25;
 	col2 = 170;
@@ -669,13 +920,13 @@ function showRibbonData()
 
 	fill(255,255,255);
 	moreH = 125;
-	text("Name",col1+moreH,25);
-	text("Ribbon",col2+moreH,25);
-	text("House",col3+moreH,25);
-	text("Event",col4+moreH,25);
-	text("Gender",col5+moreH,25);
-	text("Place",col6+moreH,25);
-//	text("Ribbon",col7+moreH,25);
+	text("Name",col1+moreH,startGapSize);
+	text("Ribbon",col2+moreH,startGapSize);
+	text("House",col3+moreH,startGapSize);
+	text("Event",col4+moreH,startGapSize);
+	text("Gender",col5+moreH,startGapSize);
+	text("Place",col6+moreH,startGapSize);
+//	text("Ribbon",col7+moreH,startGapSize);
 
 
 	// send data back to the spreadsheet
@@ -796,10 +1047,18 @@ function checkUniqueMode() {
 
 function mouseReleased()
 {
-	lock = false;
+	if (lock == true)
+	{
+//		pullData();
+		lock = false;
+	}
 }
 
 function touchEnded()
 {
-	lock = false;
+	if (lock == true)
+	{
+//		pullData();
+		lock = false;
+	}
 }
