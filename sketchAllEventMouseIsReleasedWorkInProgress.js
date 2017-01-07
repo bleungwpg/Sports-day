@@ -9,11 +9,14 @@ var ipad;
 var eventUse;
 var shotputWholeValue;
 var shotputDecimalValue;
+//var shotputSubmitData = [];
+var maxShotputTextbox;
 var shotputIsSetup;
-var discusIsSetup;
-var longjumpIsSetup;
 var currentStudentIndex;
-var eventID;
+var lock = [];
+var maxLock;
+// lock definition: 0-7: gradebutton, 10-11: event, 30 - ribbon toggle
+//                  40 - shotputt interfaceA, 51 - shotputt interfaceB
 
 
 function setup(){
@@ -21,8 +24,6 @@ function setup(){
 	createCanvas(1053,1505);
 
 	shotputIsSetup = false;
-	discusIsSetup = false;
-	longjumpIsSetup = false;
 	thimble = false;
 	testing = true;
 	dataSubmitted = false;
@@ -32,13 +33,24 @@ function setup(){
 	first = true;
 	once = true;
 	currentGrade = 6;
-	lock = false;
+	maxLock = 40;
+
+	
+	lock = new Array(maxLock);
+	
+	for (var j = 0; j < maxLock; j++)
+	{
+		lock[i] = 0;
+	}
+	
 	eventUse = "ribbons";
+	maxShotputTextbox = 200;
 	currentStudentIndex = 0;
-	eventID = 0;
 
 	var textboxH = 23;
 	var textboxHGap = 2;
+
+//	shotputSubmitData = new Array(maxShotputTextbox);
 	
 	
 	// setup selection boxes for input
@@ -76,6 +88,21 @@ function setup(){
 	submitbutton.position(400, 105);
 	submitbutton.mousePressed(pullData);
 	
+	/*
+	checkbox = createCheckbox();
+	if (thimble == true)
+	{
+		checkbox.position(18,92);
+	}
+	else
+	{
+		checkbox.position(15,490);
+	}
+	checkbox.changed(checkUniqueMode);
+	checkbox.hide();
+	*/
+
+	
 	if (testing == true)
 	{
 		wholehyperlink = "https://docs.google.com/spreadsheets/d/1CGxETFmlqy4lYYhtWcIMd7COtW9MR11EN0YI47XcvCk/edit#gid=1021250630";
@@ -112,23 +139,14 @@ function draw(){
 		}
 		else if (eventUse == "shotput")
 		{
-			showEventData(0);
+			showShotputData();
 		}
-		else if (eventUse == "input")
+		else if (eventUse == "shotputinput")
 		{
-			showInputDataInterface();
+			showShotputInput();
 		}
-		else if (eventUse == "long jump")
-		{
-			showEventData(1);
-		}
-		else if (eventUse == "discus")
-		{
-			showEventData(2);
-		}
-
 //			fill(255,255,255);
-//			text(eventRows[showEvent],800,10);
+//			text(shotputRows,800,10);
 	}
 	else
 	{
@@ -153,7 +171,7 @@ function draw(){
 	}
 }
 
-function showInputDataInterface()
+function showShotputInput()
 {
 	background(0,0,0);
 	var y = 50;
@@ -161,7 +179,7 @@ function showInputDataInterface()
 	// show name
 	textSize(25);
 	fill(255,255,255);
-	text(eventData[eventID][currentStudentIndex][0],300,(currentStudentIndex+1)*continuousGapSize+startGapSize-50+y);
+	text(shotputdata[currentStudentIndex][0],300,(currentStudentIndex+1)*continuousGapSize+startGapSize-50+y);
 	
 	
 	// show dropdown data interface
@@ -176,18 +194,18 @@ function showInputDataInterface()
 	{
 		var d = "00";
 		var w = 0;
-		if (eventData[eventID][currentStudentIndex][10] != 0)
+		if (shotputdata[currentStudentIndex][10] != 0)
 		{
-			if (eventData[eventID][currentStudentIndex][10].toString().indexOf('.') == -1)
+			if (shotputdata[currentStudentIndex][10].toString().indexOf('.') == -1)
 			{
-				w = eventData[eventID][currentStudentIndex][10].toString();
+				w = shotputdata[currentStudentIndex][10].toString();
 				d = "00";
 			}
 			else
 			{
-				w = eventData[eventID][currentStudentIndex][10].toString().substr(0,eventData[eventID][currentStudentIndex][10].toString().indexOf('.'));			
-				d = eventData[eventID][currentStudentIndex][10].toString().substr(eventData[eventID][currentStudentIndex][10].toString().indexOf('.')+1,eventData[eventID][currentStudentIndex][10].toString().length);
-				if (eventData[eventID][currentStudentIndex][10].toString().substr(eventData[eventID][currentStudentIndex][10].toString().indexOf('.')+1,eventData[eventID][currentStudentIndex][10].toString().length).length == 1)
+				w = shotputdata[currentStudentIndex][10].toString().substr(0,shotputdata[currentStudentIndex][10].toString().indexOf('.'));			
+				d = shotputdata[currentStudentIndex][10].toString().substr(shotputdata[currentStudentIndex][10].toString().indexOf('.')+1,shotputdata[currentStudentIndex][10].toString().length);
+				if (shotputdata[currentStudentIndex][10].toString().substr(shotputdata[currentStudentIndex][10].toString().indexOf('.')+1,shotputdata[currentStudentIndex][10].toString().length).length == 1)
 				{
 					d += "0";				
 				}
@@ -231,17 +249,11 @@ function showInputDataInterface()
 
 	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 545 && mouseX < 545+100 && mouseY > (currentStudentIndex+1)*continuousGapSize+startGapSize-20+y && mouseY < (currentStudentIndex+1)*continuousGapSize+startGapSize-20+50+y)
 	{
-		if (eventID == 0)
-			eventUse = "shotput";
-		else if (eventID == 1)
-			eventUse = "long jump";
-		else if (eventID == 2)
-			eventUse = "discus";
-			
+		eventUse = "shotput";
 		lock = true;
 		shotputWholeValue.hide();
 		shotputDecimalValue.hide();
-		eventData[eventID][currentStudentIndex][10] = f;
+		shotputdata[currentStudentIndex][10] = f;
 		shotputIsSetup = false;
 		sendShotputData(f);
 	}
@@ -254,17 +266,11 @@ function sendShotputData(newShotputtData)
 	// start - submit the data back to the spreadsheet
 	formData = new FormData();
 	formData.append("Sheet Name","Grade"+currentGrade);
-	formData.append("Student ID",eventData[eventID][currentStudentIndex][1]);
-	formData.append("Event",eventData[eventID][currentStudentIndex][3]);
-//	formData.append("Data",eventData[eventID][currentStudentIndex][10]);
+	formData.append("Student ID",shotputdata[currentStudentIndex][1]);
+	formData.append("Event",shotputdata[currentStudentIndex][3]);
+//	formData.append("Data",shotputdata[currentStudentIndex][10]);
 	formData.append("Data",newShotputtData);
-	if (eventID == 0)
-		formData.append("UpdateEvent","shotputt");
-	else if (eventID == 1)
-		formData.append("UpdateEvent","long jump");
-	else if (eventID == 2)
-		formData.append("UpdateEvent","discus");
-
+	formData.append("UpdateEvent","shotputt");
 
 	var request = new XMLHttpRequest();
 
@@ -274,6 +280,54 @@ function sendShotputData(newShotputtData)
 	// end - submit data back to the spreadsheet	
 }
 
+/*
+function closeShotput()
+{
+	for (var i = 0; i < maxShotputTextbox; i++)
+	{
+		shotputWholeValue[i].hide();
+	}
+	shotputIsSetup = false;
+}
+
+function setupShotput()
+{
+
+	for (var i = 0; i < maxShotputTextbox; i++)
+	{
+		if (i < shotputRows)
+		{
+			shotputWholeValue[i].value(shotputdata[i][10]);
+			shotputWholeValue[i].show();
+		}	
+		else
+			shotputWholeValue[i].hide();
+	}
+	shotputIsSetup = true;
+}
+*/
+/*
+function updateShotputData()
+{
+
+	for (var i = 0; i < shotputRows; i++)
+	{
+		fill(255,255,255);
+//		text(shotputdata[i][10],700,70+i*23+i*2);
+//		text(shotputWholeValue[i].value(),700,70+i*23+i*2);
+		
+		
+		if (shotputdata[i][10] != shotputWholeValue[i].value())
+		{
+			shotputdata[i][10] = shotputWholeValue[i].value();
+			shotputSubmitData[i] = 1;
+//			fill(255,255,255);
+//			rect(800,90,100,100);
+		}
+	
+	}
+}
+*/
 
 // Create buttons from grades 6 - 12
 // handle what happens when you click on buttons
@@ -296,11 +350,17 @@ function drawButtons()
 	text("Ribbons",34,39+buttonGap*8);
 
 
-	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+	if ((mouseIsPressed || touchIsDown) && lock[1] == 0 && mouseX > 10 && mouseX < 10+100 &&
 		mouseY > 10+buttonGap*8 && mouseY < 10+buttonGap*8+50)
+	{
+		lock[1] = 1;
+	}
+	
+	if (lock[1] == 2)
 	{
 		eventUse = "ribbons";
 	}
+
 
 
 	// ------------- IF shotput button is pressed setup -------------	
@@ -318,60 +378,11 @@ function drawButtons()
 	text("Shotput",34,39+buttonGap*9);
 
 
-	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
+	if ((mouseIsPressed || touchIsDown) && lock[1] == 0 && mouseX > 10 && mouseX < 10+100 &&
 		mouseY > 10+buttonGap*9 && mouseY < 10+buttonGap*9+50)
 	{
 		eventUse = "shotput";
-		eventID = 1;
 	}
-
-
-	// ------------- IF long jump button is pressed setup -------------	
-	if (eventUse == "long jump")
-	{
-		fill(255,255,0);
-	}
-	else
-	{
-		fill(255,255,255);	
-	}
-	
-	rect(10,10+buttonGap*10,100,50);
-	fill(0,0,0);
-	text("Long Jump",34,39+buttonGap*10);
-
-
-	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
-		mouseY > 10+buttonGap*10 && mouseY < 10+buttonGap*10+50)
-	{
-		eventUse = "long jump";
-		eventID = 1;
-	}
-
-
-	// ------------- IF discus button is pressed setup -------------	
-	
-	if (eventUse == "discus")
-	{
-		fill(255,255,0);
-	}
-	else
-	{
-		fill(255,255,255);	
-	}
-	
-	rect(10,10+buttonGap*11,100,50);
-	fill(0,0,0);
-	text("Discus",34,39+buttonGap*11);
-
-
-	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
-		mouseY > 10+buttonGap*11 && mouseY < 10+buttonGap*11+50)
-	{
-		eventUse = "discus";
-		eventID = 1;
-	}
-
 
 	// ---------------------- IF Grade level button is pressed --------------------
 	for (var b = 0; b < 7; b++)
@@ -389,20 +400,26 @@ function drawButtons()
 		text("Grade "+(b+6),34,39+buttonGap*b);
 		
 
-		if ((touchIsDown || mouseIsPressed) && !lock && mouseX > 10 && mouseX < 10+100 &&
+		// initiate mouseclick or touch action
+		if ((touchIsDown || mouseIsPressed) && lock[0] == 0 && mouseX > 10 && mouseX < 10+100 &&
 			mouseY > 10+buttonGap*b && mouseY < 10+buttonGap*b+50)
 		{	
+			lock[0] = 1;
+		}
+		// when mouse or touch is up then we send for new data and change grades
+		if (lock[0] == 2)
+		{
 			currentGrade = b+6;
 			var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
 
 			query.send(handleQueryResponse);
-			lock = true;
+			lock[0] = 0;
 		}
 
 	}
 }
 
-function showEventData(showEvent)
+function showShotputData()
 {
 	background(0,0,0);
 	
@@ -412,51 +429,49 @@ function showEventData(showEvent)
 	// show data
 	col1 = 25;
 	col2 = 170;
-	col3 = 230;
-	col4 = 300;
-	col5 = 390;
-	col6 = 460;
+	col3 = 250;
+	col4 = 340;
+	col5 = 410;
+	col6 = 480;
 
 	fill(255,255,255);
 	moreH = 125;
-
 	text("Name",col1+moreH,25);
+	text("Shotputt",col2+moreH,25);
 	text("Student ID",col3+moreH,25);
 	text("House",col4+moreH,25);
 	text("Event",col5+moreH,25);
 	text("Gender",col6+moreH,25);
 
-	if (showEvent == 0)
-		text("Shotputt",col2+moreH,25);
-	else if (showEvent == 1)
-		text("Long Jump",col2+moreH,25);
-	else if (showEvent == 2)
-		text("Discus",col2+moreH,25);
 
+//	text("Student ID",col2+moreH,25);
+//	text("House",col3+moreH,25);
+//	text("Event",col4+moreH,25);
+//	text("Gender",col5+moreH,25);
+//	text("Shotputt",col6+moreH,25);
 
-
-	var gold = [];
-	var silver = [];
-	var bronze = [];
-	var medalFloat = new Array(eventRows[showEvent]);
-
-
-	for (var r = 0; r < eventRows[showEvent]; r++)
+/*
+	if (eventUse == "shotput" && shotputIsSetup == false)
+	{
+		setupShotput();
+	}
+	*/
+	for (var r = 0; r < shotputRows; r++)
 	{
 		hoverOverGapSize = 8;
 		// highlight where the mouse hovering over with a green background
 		if (mouseY > (r)*continuousGapSize+startGapSize+hoverOverGapSize && 
-		    mouseY < (r+1)*continuousGapSize+startGapSize+hoverOverGapSize && mouseX > 140 && mouseX < 140+470)
+		    mouseY < (r+1)*continuousGapSize+startGapSize+hoverOverGapSize && mouseX > 140 && mouseX < 140+200)
 		{
 			fill(0,255,50);
-			rect(140,(r)*continuousGapSize+startGapSize+hoverOverGapSize,500,25);
+			rect(140,(r)*continuousGapSize+startGapSize+hoverOverGapSize,680,25);
 			fill(0,0,0);
 			
 			// if mouse is pressed pull up shotputinput interface
 			// end the loop and setup currentStudentIndex
-			if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 140 && mouseX < 140+200)
+			if ((mouseIsPressed || touchIsDown) && lock[40] == 0)
 			{
-				eventUse = "input";
+				eventUse = "shotputinput";
 				currentStudentIndex = r;
 				lock = true;
 				break;
@@ -475,171 +490,39 @@ function showEventData(showEvent)
 		{
 			if (c == 0)
 			{
-				text(eventData[showEvent][r][c],col1+moreH,(r+1)*continuousGapSize+startGapSize);
+				text(shotputdata[r][c],col1+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
 			if (c == 1)
 			{
-				text(eventData[showEvent][r][c],col3+moreH,(r+1)*continuousGapSize+startGapSize);
+				text(shotputdata[r][c],col3+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
 			if (c == 2)
 			{
-				text(eventData[showEvent][r][c],col4+moreH,(r+1)*continuousGapSize+startGapSize);
+				text(shotputdata[r][c],col4+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
 			if (c == 3)
 			{
-				text(eventData[showEvent][r][c],col5+moreH,(r+1)*continuousGapSize+startGapSize);
+				text(shotputdata[r][c],col5+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
 			if (c == 4)
 			{
-				text(eventData[showEvent][r][c],col6+moreH,(r+1)*continuousGapSize+startGapSize);
+				text(shotputdata[r][c],col6+moreH,(r+1)*continuousGapSize+startGapSize);
 			}
 			
 			if (c == 10)
 			{
-				// place the shotput data appropriately			
-				if (eventData[showEvent][r][c].toString().length == 4)
-					text(eventData[showEvent][r][c],col2+moreH+6,(r+1)*continuousGapSize+startGapSize);
+				if (shotputdata[r][c].toString().length == 4)
+					text(shotputdata[r][c],col2+moreH+6,(r+1)*continuousGapSize+startGapSize);
 				else
-					text(eventData[showEvent][r][c],col2+moreH,(r+1)*continuousGapSize+startGapSize);
-
-				// create an array of floating point numbers
-				medalFloat[r] = eventData[showEvent][r][c].toString();
-
-
-
-				if (medalFloat[r] > 0)
-				{
-
-					// is gold empty?
-					if (gold.length == 0)
-						gold.push(r);
-						
-					// are you equal to gold?
-					else if (gold.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][gold[0]][c].toString()))
-					{
-						gold.push(r);					
-					}
-					// are you greater than gold?  shift everything
-					else if (gold.length > 0 && medalFloat[r] > parseFloat(eventData[showEvent][gold[0]][c].toString()))
-					{
-						while (bronze.length > 0)
-							bronze.pop();
-					
-						while (silver.length > 0)
-							bronze.push(silver.pop());
-							
-						while (gold.length > 0)
-							silver.push(gold.pop());
-							
-						gold.push(r);
-					}
-					// otherwise you must be less than gold
-					else
-					{
-						// is silver empty?
-						if (silver.length == 0)
-							silver.push(r);
-							
-						// are you equal to silver?
-						else if (silver.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][silver[0]][c].toString()))
-						{
-							silver.push(r);
-						}
-						
-						// are you greater than silver?
-						else if (silver.length > 0 && medalFloat[r] > parseFloat(eventData[showEvent][silver[0]][c].toString()))
-						{
-							while (bronze.length > 0)
-								bronze.pop();
-					
-							while (silver.length > 0)
-								bronze.push(silver.pop());
-							
-							silver.push(r);
-						}
-						
-						// otherwise you must be less than silver
-						else
-						{
-							// is bronze empty?
-							if (bronze.length == 0)
-								bronze.push(r);
-							
-							// are you equal to bronze?
-							else if (bronze.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][bronze[0]][c].toString()))
-							{
-								bronze.push(r);
-							}
-						
-							// are you greater than bronze?
-							else if (bronze.length > 0 && medalFloat[r] > parseFloat(eventData[showEvent][bronze[0]][c].toString()))
-							{
-								while (bronze.length > 0)
-									bronze.pop();
-												
-								bronze.push(r);
-							}
-						
-						} // else less than silver
-					} // else less than gold
-				} // if medal value > 0
-			} // if c > 10
-		} // for loop columns
-	} // for loop rows
-	
-	
-	// eliminate medalist when there are duplicates
-	// if there are 3 or more gold medalists there should be no others
-	if (gold.length >= 3)
-	{
-		while (silver.length > 0)
-			silver.pop();
-	
-		while (bronze.length > 0)
-			bronze.pop()
-	}
-	// if there are 2 gold medalists then silvers are demoted to bronze
-	if (gold.length == 2)
-	{
-		while (bronze.length > 0)
-			bronze.pop();
-		while (silver.length > 0)
-			bronze.push(silver.pop());
-	}
-	
-	// if two or more silvers then no bronzes
-	if (silver.length >= 2)
-	{
-		while (bronze.length > 0)
-			bronze.pop()
-	}
-	
-	
-	// show the medalists
-	if (bronze.length > 0)
-	{
-		for (var b = 0; b < bronze.length; b++)
-		{
-			fill(189,134,39);
-			ellipse(333,(bronze[b]+1)*continuousGapSize+startGapSize-4,10,10);
+					text(shotputdata[r][c],col2+moreH,(r+1)*continuousGapSize+startGapSize);
+			}
+			
 		}
+		
+//		shotputWholeValue[r].value(shotputdata[r][10]);
+
 	}
-	if (silver.length > 0)
-	{
-		for (var s = 0; s < silver.length; s++)
-		{
-			fill(255,255,255);
-			ellipse(333,(silver[s]+1)*continuousGapSize+startGapSize-4,10,10);
-		}
-	}
-	if (gold.length > 0)
-	{
-		for (var g = 0; g < gold.length; g++)
-		{
-			fill(255,255,1);
-			ellipse(333,(gold[g]+1)*continuousGapSize+startGapSize-4,10,10);
-		}
-	}
+
 
 }
 
@@ -687,7 +570,7 @@ function showRibbonData()
 		    mouseY < (r+1)*continuousGapSize+startGapSize+hoverOverGapSize && mouseX > 140 && mouseX < 140+580)
 		{
 			fill(0,255,50);
-			rect(140,(r)*continuousGapSize+startGapSize+hoverOverGapSize,520,25);
+			rect(140,(r)*continuousGapSize+startGapSize+hoverOverGapSize,580,25);
 			fill(0,0,0);
 			
 			
@@ -695,41 +578,27 @@ function showRibbonData()
 			if (mouseX > 140 && mouseX < 140+200)
 			{
 				// if mouse is pressed toggle the status
-				if ((mouseIsPressed || touchIsDown) && !lock)
+				if ((mouseIsPressed || touchIsDown) && lock[30] == 0)
 				{
 					if (ribbondata[r][8] == 1)
 					{
 						ribbondata[r][8] = 2;
-						lock = true;
+						lock[30] = 1;
 					}
 					else
 					{
 						ribbondata[r][8] = 1;
-						lock = true;
+						lock[30] = 1;
 					}
-			
-					// start - submit the data back to the spreadsheet
-					formData = new FormData();
-					formData.append("Sheet Name","Grade"+currentGrade);
-					formData.append("Student ID",ribbondata[r][1]);
-					formData.append("Event",ribbondata[r][3]);
-					formData.append("Data",ribbondata[r][8]);
-					formData.append("UpdateEvent","ribbon");
 
-					var request = new XMLHttpRequest();
-
-					// MARK - MUST CHANGE 2
-					request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
-					request.send(formData);
-					// end - submit data back to the spreadsheet
-				}			
-				
+				}							
 			} // if you touched name
 		}
 		else
 		{
 			fill(255,255,255);
 		}
+
 
 		// populate data
 		for (var c = 0; c < maxCols; c++)
@@ -774,6 +643,27 @@ function showRibbonData()
 		}
 	}
 
+	// send data after the lock has been released
+	if (lock[30] == 2)
+	{
+		// start - submit the data back to the spreadsheet
+		formData = new FormData();
+		formData.append("Sheet Name","Grade"+currentGrade);
+		formData.append("Student ID",ribbondata[r][1]);
+		formData.append("Event",ribbondata[r][3]);
+		formData.append("Data",ribbondata[r][8]);
+		formData.append("UpdateEvent","ribbon");
+
+		var request = new XMLHttpRequest();
+
+		// MARK - MUST CHANGE 2
+		request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
+		request.send(formData);
+		// end - submit data back to the spreadsheet
+		
+		lock[30] = 0;
+	}
+
 }
 
 function checkUniqueMode() {
@@ -796,10 +686,22 @@ function checkUniqueMode() {
 
 function mouseReleased()
 {
-	lock = false;
+	for (var j = 0; j < maxLock; j++)
+	{
+		if (lock[i] == 1)
+		{
+			lock[i] = 2;
+		}
+	}
 }
 
 function touchEnded()
 {
-	lock = false;
+	for (var j = 0; j < maxLock; j++)
+	{
+		if (lock[i] == 1)
+		{
+			lock[i] = 2;
+		}
+	}
 }

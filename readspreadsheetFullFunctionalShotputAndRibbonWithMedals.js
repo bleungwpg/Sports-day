@@ -2,11 +2,15 @@ google.load("visualization", "1", {packages:["corechart"]});
 
 var alldata = [[]];
 var ribbondata = [[]];
-var eventData = [[[]]];
+var shotputdata = [[]];
+var discusdata = [[]];
+var longjumpdata = [[]];
 var maxRows;
 var maxCols;
 var ribbonRows;
-var eventRows = [];
+var shotputRows;
+var discusRows;
+var longjumpRows;
 var inp;
 var startGapSize = 25;
 var continuousGapSize = 25;
@@ -21,6 +25,7 @@ var dataSubmitted;
 
 function showData()
 {
+
 
       background(0,0,0);
 	  fill(255,255,255);
@@ -50,7 +55,6 @@ function showData()
           }
         }
       }
-
 }
 
 
@@ -98,18 +102,13 @@ function handleQueryResponse(response) {
 		console.log('There are '+maxCols+' cols');	
 	}
 
-	var maxEvent = 3;
 
 	var rowdata = new Array(maxCols);
 	alldata = new Array(maxRows);
-	
-	eventRows = new Array(maxEvent);
 	ribbonRows = 0;
-	
-	for (var q = 0; q < maxEvent; q++)
-	{
-		eventRows[q] = 0;
-	}
+	shotputRows = 0;
+	discusRows = 0;
+	longjumpRows = 0;
 
 
 	for (var r = 0; r < maxRows; r++)
@@ -130,15 +129,15 @@ function handleQueryResponse(response) {
 			
 			if (alldata[r][3] == "Shot Putt")
 			{
-				eventRows[0]++;
-			}
-			if (alldata[r][3] == "Long Jump")
-			{
-				eventRows[1]++;
+				shotputRows++;
 			}
 			if (alldata[r][3] == "Discus")
 			{
-				eventRows[2]++;
+				discusRows++;
+			}
+			if (alldata[r][3] == "Long Jump")
+			{
+				longjumpRows++;
 			}
 			
 			// if they are ribbon winners add one to count
@@ -168,155 +167,151 @@ function handleQueryResponse(response) {
 		}
 	}
 	
-	eventData = new Array(maxEvent);
+	shotputdata = new Array(shotputRows);
+	discusdata = new Array(discusRows);
+	longjumpdata = new Array(longjumpRows);
 	
-	for (var x = 0; x < eventData.length; x++)
-	{
-		eventData[x] = new Array(eventRows[x]);
-		eventRows[x] = 0;
-	}
-	
+	shotputRows = 0;
+	discusRows = 0;
+	longjumpRows = 0;
 	
 	// copy shotputt data
 	// copy discus data
 	// copy longjump data
 	
-	for (var x = 0; x < eventData.length; x++)
+	for (var r = 0; r < maxRows; r++)
 	{
-		for (var r = 0; r < maxRows; r++)
+		if (alldata[r][3] == "Shot Putt")
 		{
-			if (x == 0 && alldata[r][3] == "Shot Putt")
+			shotputdata[shotputRows] = new Array(maxCols);
+		
+			for (var c = 0; c < maxCols; c++)
 			{
-				eventData[x][eventRows[x]] = new Array(maxCols);
-		
-				for (var c = 0; c < maxCols; c++)
+				if (c == 10 && alldata[r][c] == "")
 				{
-					if (c == 10 && alldata[r][c] == "")
-					{
-						eventData[x][eventRows[x]][c] = "0.00";			
-					}
-					else 
-					{
-						if (c == 10)
-						{
-							var d = "00";
-							var w = 0;
-							if (alldata[r][10] != 0)
-							{
-								if (alldata[r][10].toString().indexOf('.') == -1)
-								{
-									w = alldata[r][10].toString();
-									d = "00";
-								}
-								else
-								{
-									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
-									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
-									{
-										d += "0";				
-									}
-				
-								}
-							}
-							eventData[x][eventRows[x]][c] = w+"."+d;	
-						}
-						else
-							eventData[x][eventRows[x]][c] = alldata[r][c];	
-					}
+					shotputdata[shotputRows][c] = "0.00";			
 				}
-				eventRows[x]++;
-			} // shotput if
+				else 
+				{
+					if (c == 10)
+					{
+						var d = "00";
+						var w = 0;
+						if (alldata[r][10] != 0)
+						{
+							if (alldata[r][10].toString().indexOf('.') == -1)
+							{
+								w = alldata[r][10].toString();
+								d = "00";
+							}
+							else
+							{
+								w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+								d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+								if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+								{
+									d += "0";				
+								}
+				
+							}
+						}
+						shotputdata[shotputRows][c] = w+"."+d;	
+					}
+					else
+						shotputdata[shotputRows][c] = alldata[r][c];	
+				}
+			}
+			shotputRows++;
+		} // shotput if
 		
-			if (x == 1 && alldata[r][3] == "Long Jump")
+		if (alldata[r][3] == "Long Jump")
+		{
+			longjumpdata[longjumpRows] = new Array(maxCols);
+		
+			for (var c = 0; c < maxCols; c++)
 			{
-				eventData[x][eventRows[x]] = new Array(maxCols);
-		
-				for (var c = 0; c < maxCols; c++)
+				if (c == 10 && alldata[r][c] == "")
 				{
-					if (c == 10 && alldata[r][c] == "")
-					{
-						eventData[x][eventRows[x]][c] = "0.00";			
-					}
-					else 
-					{
-						if (c == 10)
-						{
-							var d = "00";
-							var w = 0;
-							if (alldata[r][10] != 0)
-							{
-								if (alldata[r][10].toString().indexOf('.') == -1)
-								{
-									w = alldata[r][10].toString();
-									d = "00";
-								}
-								else
-								{
-									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
-									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
-									{
-										d += "0";				
-									}
-				
-								}
-							}
-							eventData[x][eventRows[x]][c] = w+"."+d;	
-						}
-						else
-							eventData[x][eventRows[x]][c] = alldata[r][c];	
-					}
+					longjumpdata[longjumpRows][c] = "0.00";			
 				}
-				eventRows[x]++;
-			} // long jump if
+				else 
+				{
+					if (c == 10)
+					{
+						var d = "00";
+						var w = 0;
+						if (alldata[r][10] != 0)
+						{
+							if (alldata[r][10].toString().indexOf('.') == -1)
+							{
+								w = alldata[r][10].toString();
+								d = "00";
+							}
+							else
+							{
+								w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+								d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+								if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+								{
+									d += "0";				
+								}
+				
+							}
+						}
+						longjumpdata[longjumpRows][c] = w+"."+d;	
+					}
+					else
+						longjumpdata[longjumpRows][c] = alldata[r][c];	
+				}
+			}
+			longjumpRows++;
+		} // long jump if
 
-			if (x == 2 && alldata[r][3] == "Discus")
-			{
-				eventData[x][eventRows[x]] = new Array(maxCols);
+		if (alldata[r][3] == "Discus")
+		{
+			discusdata[discusRows] = new Array(maxCols);
 		
-				for (var c = 0; c < maxCols; c++)
+			for (var c = 0; c < maxCols; c++)
+			{
+				if (c == 10 && alldata[r][c] == "")
 				{
-					if (c == 10 && alldata[r][c] == "")
-					{
-						eventData[x][eventRows[x]][c] = "0.00";			
-					}
-					else 
-					{
-						if (c == 10)
-						{
-							var d = "00";
-							var w = 0;
-							if (alldata[r][10] != 0)
-							{
-								if (alldata[r][10].toString().indexOf('.') == -1)
-								{
-									w = alldata[r][10].toString();
-									d = "00";
-								}
-								else
-								{
-									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
-									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
-									{
-										d += "0";				
-									}
-				
-								}
-							}
-							eventData[x][eventRows[x]][c] = w+"."+d;	
-						}
-						else
-							eventData[x][eventRows[x]][c] = alldata[r][c];	
-					}
+					discusdata[discusRows][c] = "0.00";			
 				}
-				eventRows[x]++;
-			} // if discus
+				else 
+				{
+					if (c == 10)
+					{
+						var d = "00";
+						var w = 0;
+						if (alldata[r][10] != 0)
+						{
+							if (alldata[r][10].toString().indexOf('.') == -1)
+							{
+								w = alldata[r][10].toString();
+								d = "00";
+							}
+							else
+							{
+								w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+								d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+								if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+								{
+									d += "0";				
+								}
+				
+							}
+						}
+						discusdata[discusRows][c] = w+"."+d;	
+					}
+					else
+						discusdata[discusRows][c] = alldata[r][c];	
+				}
+			}
+			discusRows++;
+		}
 
 
-		} // for each row in the event
-	} // for all events
+	} // for
 
 	// allow data to be shown after it has been submitted
 	dataSubmitted = true;
