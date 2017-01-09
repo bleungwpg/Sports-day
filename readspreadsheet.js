@@ -4,6 +4,7 @@ var alldata = [[]];
 var ribbondata = [[]];
 var housedata = [[]];
 var eventData = [[[]]];
+var localEventData = [[[]]];
 var maxRows;
 var maxCols;
 var ribbonRows;
@@ -157,6 +158,113 @@ function pullData()
     query.send(handleQueryResponse);
 }
 
+// called after we transfer data
+function handleUpdateQueryResponse(response) {
+
+	if (testing == true)
+	{
+		console.log("Running Update Query");
+	}
+	
+	if (response.isError()) {
+		alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+		return;
+	}
+
+
+	var data = response.getDataTable();
+
+	maxRows = data.getNumberOfRows();
+	maxCols = data.getNumberOfColumns();
+
+
+	if (testing == true)
+	{
+//		console.log('There are '+maxRows+' rows');
+//		console.log('There are '+maxCols+' cols');	
+	}
+	
+	
+	var xalldata = new Array(maxRows);
+	
+	var aevent = "";
+	if (eventUse == "shotput")
+		aevent = "Shot Putt";
+	else if (eventUse == "long jump")
+		aevent = "Long Jump";
+	else if (eventUse == "discus")
+		aevent = "Discus";
+	else if (eventUse == "100m")
+		aevent = "100m";
+	else if (eventUse == "200m")
+		aevent = "200m";
+	else if (eventUse == "400m")
+		aevent = "400m";
+
+	var yalldata = [[]];
+	yalldata = new Array(0);
+	var nmaxRows = 0;
+	
+	for (var r = 0; r < maxRows; r++)
+	{
+	
+
+
+			xalldata[r] = new Array(maxCols);
+			
+			for (var c = 0; c < maxCols; c++)
+			{
+				var info = data.getValue(r,c);
+		
+				if (info == null)
+				{
+					xalldata[r][c] = "";
+				}
+				else
+				{
+					xalldata[r][c] = info;	
+				}
+			}
+			if (xalldata[r][3] == aevent)		
+			{
+				yalldata.push(xalldata[r]);
+			}
+
+		
+	}
+	
+	for (var r = 0; r < yalldata.length; r++)
+	{
+		for (var i = 0; i < httpSendRequestArray.length; i++)
+		{
+		
+			if (r == httpSendRequestArray[i][1] && yalldata[r][3] == aevent)
+			{
+				if (parseFloat(yalldata[r][10].toString()) == parseFloat(localEventData[eventID][r][2].toString()))
+				{
+					localEventData[eventID][r][5] = 2;
+					console.log(r+"  "+yalldata[r][10]+"=="+localEventData[eventID][r][2]+" Successful Update!");
+					httpSendRequestArray.splice(i,1);
+					i--;
+					
+					// remove any duplicate (earlier) send requests from the same row
+					for (var j = 0; j < httpSendRequestArray.length; j++)
+					{
+						if (r == httpSendRequestArray[j][1])
+						httpSendRequestArray.splice(j,1);
+						j--;
+					}
+						 
+				}
+				else
+				{
+					console.log(r+"  "+yalldata[r][10]+"!="+localEventData[eventID][r][2]+" Sending Data - Not Updated");
+				}
+			}
+		}
+	}
+}
+
 // Called when the query response is returned.
 function handleQueryResponse(response) {
 
@@ -267,10 +375,12 @@ function handleQueryResponse(response) {
 	}
 	
 	eventData = new Array(maxEvent);
+	localEventData = new Array(maxEvent);
 	
 	for (var x = 0; x < eventData.length; x++)
 	{
 		eventData[x] = new Array(eventRows[x]);
+		localEventData[x] = new Array(eventRows[x].length);
 		eventRows[x] = 0;
 	}
 	
@@ -278,13 +388,25 @@ function handleQueryResponse(response) {
 	// copy shotputt data
 	// copy discus data
 	// copy longjump data
+	var eventMark = 0;
 	
 	for (var x = 0; x < eventData.length; x++)
 	{
+
 		for (var r = 0; r < maxRows; r++)
 		{
+		
+			localEventData[x][eventRows[x]] = new Array(6);
+			localEventData[x][eventRows[x]][0] = alldata[r][1];
+			localEventData[x][eventRows[x]][1] = alldata[r][3];
+			localEventData[x][eventRows[x]][2] = alldata[r][10];
+			localEventData[x][eventRows[x]][3] = alldata[r][5];
+			localEventData[x][eventRows[x]][4] = false;
+			localEventData[x][eventRows[x]][5] = 0;
+		
 			if (x == 0 && alldata[r][3] == "Shot Putt")
 			{
+				eventMark = x;
 				eventData[x][eventRows[x]] = new Array(maxCols);
 		
 				for (var c = 0; c < maxCols; c++)
@@ -325,9 +447,10 @@ function handleQueryResponse(response) {
 				}
 				eventRows[x]++;
 			} // shotput if
-		
+
 			if (x == 1 && alldata[r][3] == "Long Jump")
 			{
+				eventMark = x;
 				eventData[x][eventRows[x]] = new Array(maxCols);
 		
 				for (var c = 0; c < maxCols; c++)
@@ -371,6 +494,7 @@ function handleQueryResponse(response) {
 
 			if (x == 2 && alldata[r][3] == "Discus")
 			{
+				eventMark = x;
 				eventData[x][eventRows[x]] = new Array(maxCols);
 		
 				for (var c = 0; c < maxCols; c++)
@@ -412,29 +536,29 @@ function handleQueryResponse(response) {
 				eventRows[x]++;
 			} // if discus
 
-
 			if (x == 3 && alldata[r][3] == "100m")
 			{
+				eventMark = x;
 				eventData[x][eventRows[x]] = new Array(maxCols);
 		
 				for (var c = 0; c < maxCols; c++)
 				{
 					if (c == 10 && alldata[r][c] == "")
 					{
-						eventData[x][eventRows[x]][c] = "0.00";			
+						eventData[x][eventRows[x]][c] = "0.000";			
 					}
 					else 
 					{
 						if (c == 10)
 						{
-							var d = "00";
+							var d = "000";
 							var w = 0;
 							if (alldata[r][10] != 0)
 							{
 								if (alldata[r][10].toString().indexOf('.') == -1)
 								{
 									w = alldata[r][10].toString();
-									d = "00";
+									d = "000";
 								}
 								else
 								{
@@ -442,9 +566,12 @@ function handleQueryResponse(response) {
 									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
 									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
 									{
-										d += "0";				
+										d += "00";				
 									}
-				
+									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 2)
+									{
+										d += "0";
+									}
 								}
 							}
 							eventData[x][eventRows[x]][c] = w+"."+d;	
@@ -464,20 +591,20 @@ function handleQueryResponse(response) {
 				{
 					if (c == 10 && alldata[r][c] == "")
 					{
-						eventData[x][eventRows[x]][c] = "0.00";			
+						eventData[x][eventRows[x]][c] = "0.000";			
 					}
 					else 
 					{
 						if (c == 10)
 						{
-							var d = "00";
+							var d = "000";
 							var w = 0;
 							if (alldata[r][10] != 0)
 							{
 								if (alldata[r][10].toString().indexOf('.') == -1)
 								{
 									w = alldata[r][10].toString();
-									d = "00";
+									d = "000";
 								}
 								else
 								{
@@ -485,9 +612,12 @@ function handleQueryResponse(response) {
 									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
 									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
 									{
-										d += "0";				
+										d += "00";				
 									}
-				
+									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 2)
+									{
+										d += "0";
+									}
 								}
 							}
 							eventData[x][eventRows[x]][c] = w+"."+d;	
@@ -507,20 +637,20 @@ function handleQueryResponse(response) {
 				{
 					if (c == 10 && alldata[r][c] == "")
 					{
-						eventData[x][eventRows[x]][c] = "0.00";			
+						eventData[x][eventRows[x]][c] = "0.000";			
 					}
 					else 
 					{
 						if (c == 10)
 						{
-							var d = "00";
+							var d = "000";
 							var w = 0;
 							if (alldata[r][10] != 0)
 							{
 								if (alldata[r][10].toString().indexOf('.') == -1)
 								{
 									w = alldata[r][10].toString();
-									d = "00";
+									d = "000";
 								}
 								else
 								{
@@ -528,9 +658,12 @@ function handleQueryResponse(response) {
 									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
 									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
 									{
-										d += "0";				
+										d += "00";				
 									}
-				
+									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 2)
+									{
+										d += "0";
+									}				
 								}
 							}
 							eventData[x][eventRows[x]][c] = w+"."+d;	
@@ -543,7 +676,13 @@ function handleQueryResponse(response) {
 			} // if 400m
 
 		} // for each row in the event
+		
+
+
 	} // for all events
+	
+	
+
 
 	// allow data to be shown after it has been submitted
 	dataSubmitted = true;
@@ -551,5 +690,7 @@ function handleQueryResponse(response) {
 	// hide textbox and button
 	urlinp.hide();
 	submitbutton.hide();
+	
+	updateFinishingPlacement();
 
 }

@@ -7,13 +7,17 @@ var currentGrade;
 var formData;
 var ipad;
 var eventUse;
-var shotputWholeValue;
-var shotputDecimalValue;
+var inputWholeValue;
+var inputHundredValue;
+var inputThousandValue;
 var shotputIsSetup;
-var discusIsSetup;
-var longjumpIsSetup;
+var buttonIsSetup;
 var currentStudentIndex;
 var eventID;
+var httpSendRequestArray = [[]];
+var previousTime;
+var previousEvent;
+var previousGrade;
 
 
 function setup(){
@@ -21,8 +25,9 @@ function setup(){
 	createCanvas(1053,1505);
 
 	shotputIsSetup = false;
-	discusIsSetup = false;
-	longjumpIsSetup = false;
+	buttonIsSetup = false;
+	previousTime = second();
+
 	thimble = false;
 	testing = true;
 	dataSubmitted = false;
@@ -35,38 +40,54 @@ function setup(){
 	lock = false;
 //	eventUse = "housedata";
 	eventUse = "ribbons";
+	previousEvent = "ribbons";
+	previousGrade = 6;
 	currentStudentIndex = 0;
 	eventID = 0;
+	httpSendRequestArray = new Array(0);
 
 	var textboxH = 23;
 	var textboxHGap = 2;
 	
 	
 	// setup selection boxes for input
-	shotputWholeValue = createSelect();
-	shotputWholeValue.position(10,10);
-	shotputWholeValue.hide();
+	inputWholeValue = createSelect();
+	inputWholeValue.position(10,10);
+	inputWholeValue.hide();
 
 	for (var j = 0; j <= 101; j++)
 	{
-		shotputWholeValue.option(j);
+		inputWholeValue.option(j);
 	}
 	
 
-	shotputDecimalValue = createSelect();
-	shotputDecimalValue.position(10,10);
-	shotputDecimalValue.hide();
+	inputHundredValue = createSelect();
+	inputHundredValue.position(10,10);
+	inputHundredValue.hide();
 	
 	for (var j = 0; j < 10; j++)
 	{
 		for (var k = 0; k < 10; k++)
 		{
-			shotputDecimalValue.option(""+j+k);
+			inputHundredValue.option(""+j+k);
 		}
 	}
 		
 
-
+	inputThousandValue = createSelect();
+	inputThousandValue.position(10,10);
+	inputThousandValue.hide();
+	
+	for (var j = 0; j < 10; j++)
+	{
+		for (var k = 0; k < 10; k++)
+		{
+			for (var l = 0; l < 10; l++)
+			{
+				inputThousandValue.option(""+j+k+l);
+			}
+		}
+	}
 
 
 	// load up all textboxes and buttons in the interface
@@ -150,8 +171,14 @@ function draw(){
 		{
 			showHouseData();
 		}
+		else if (eventUse == "warning")
+		{
+			warnDataLoss();
+		}
 
 
+		if (httpSendRequestArray.length > 0)
+			handleAcknowledgement();
 
 //			fill(255,255,255);
 //			text(eventRows[showEvent],800,10);
@@ -160,6 +187,53 @@ function draw(){
 	{
 		background(0,0,0);
 		fill(0,0,0);
+	}
+}
+
+function warnDataLoss()
+{
+//	background(0,0,0);
+	fill(0,0,0,50);
+	rect(-1,-1,1053,1505);
+	
+	textSize(25);
+	fill(255,255,255);
+	text("WARNING - not all data has been successfully submitted. ",100,50);
+	text("Do you wish to continue?",100,80);
+	textSize(15);
+
+	fill(255,50,50);	
+	rect(100,100,100,50);
+	fill(0,0,0);
+	text("YES",135,130);
+
+	fill(25,255,25);	
+	rect(220,100,100,50);
+	fill(0,0,0);
+	text("CANCEL",242,130);
+
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 100 && mouseX < 100+100 &&
+		mouseY > 100 && mouseY < 100+50)
+	{
+		// remove all requests
+		while (httpSendRequestArray.length > 0)
+			httpSendRequestArray.pop();
+	
+		var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+
+
+		query.send(handleQueryResponse);
+		eventUse = previousEvent;
+		buttonIsSetup = false;
+		lock = true;
+
+	}
+	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 220 && mouseX < 220+100 &&
+		mouseY > 100 && mouseY < 100+50)
+	{
+		currentGrade = previousGrade;
+		eventUse = previousEvent;	
+		lock = true;	
 	}
 }
 
@@ -350,6 +424,7 @@ function showEventMenu()
 		eventID = 3;
 		var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
 		query.send(handleQueryResponse);
+		
 		lock = true;
 	}
 
@@ -458,15 +533,25 @@ function showInputDataInterface()
 	
 	// show dropdown data interface
 	fill(255,255,255);
-	text("m",370,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+y);
-	text("mm",475,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+y);
+	if (eventID >= 0 && eventID <= 2)
+	{
+		text("m",370,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+y);
+		text("cm",475,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+y);
+	}
+	else if (eventID >= 3 && eventID <= 5)
+	{
+		text("s",370,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+y);
+		text("ms",475,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+y);	
+	}
 	
 	
 	
 	
 	if (shotputIsSetup == false)
 	{
+
 		var d = "00";
+		var dt = "000";
 		var w = 0;
 		if (eventData[eventID][currentStudentIndex][10] != 0)
 		{
@@ -474,42 +559,66 @@ function showInputDataInterface()
 			{
 				w = eventData[eventID][currentStudentIndex][10].toString();
 				d = "00";
+				dt = "000";
 			}
 			else
 			{
 				w = eventData[eventID][currentStudentIndex][10].toString().substr(0,eventData[eventID][currentStudentIndex][10].toString().indexOf('.'));			
 				d = eventData[eventID][currentStudentIndex][10].toString().substr(eventData[eventID][currentStudentIndex][10].toString().indexOf('.')+1,eventData[eventID][currentStudentIndex][10].toString().length);
+				dt = eventData[eventID][currentStudentIndex][10].toString().substr(eventData[eventID][currentStudentIndex][10].toString().indexOf('.')+1,eventData[eventID][currentStudentIndex][10].toString().length);
+				
 				if (eventData[eventID][currentStudentIndex][10].toString().substr(eventData[eventID][currentStudentIndex][10].toString().indexOf('.')+1,eventData[eventID][currentStudentIndex][10].toString().length).length == 1)
 				{
-					d += "0";				
+					d += "0";
+					dt += "00";
 				}
-				
+				if (eventData[eventID][currentStudentIndex][10].toString().substr(eventData[eventID][currentStudentIndex][10].toString().indexOf('.')+1,eventData[eventID][currentStudentIndex][10].toString().length).length == 2)
+				{
+					dt += "0";
+				}
 			}
 		}
 
 	
 	
-		shotputWholeValue.value(w);
-		shotputDecimalValue.value(d);
+		inputWholeValue.value(w);
+		inputHundredValue.value(d);
+		inputThousandValue.value(dt);
+		
 
 	
 //		text("m value: "+w,475,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+50+y);
 //		text("mm value: "+d,475,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+100+y);
 
 	
-		shotputWholeValue.position(305,(currentStudentIndex+1)*continuousGapSize+startGapSize-20+y);
-		shotputWholeValue.show();
-		shotputWholeValue.style("font-size", "14px");
-		shotputWholeValue.size(60,30);
-		shotputDecimalValue.position(410,(currentStudentIndex+1)*continuousGapSize+startGapSize-20+y);
-		shotputDecimalValue.show();
-		shotputDecimalValue.style("font-size", "14px");
-		shotputDecimalValue.size(60,30);
+		inputWholeValue.position(305,(currentStudentIndex+1)*continuousGapSize+startGapSize-20+y);
+		inputWholeValue.show();
+		inputWholeValue.style("font-size", "14px");
+		inputWholeValue.size(60,30);
 		
+		if (eventID >= 0 && eventID <= 2)
+		{
+			inputHundredValue.position(410,(currentStudentIndex+1)*continuousGapSize+startGapSize-20+y);
+			inputHundredValue.show();
+			inputHundredValue.style("font-size", "14px");
+			inputHundredValue.size(60,30);
+		}
+		else if (eventID >= 3 && eventID <= 5)
+		{
+			inputThousandValue.position(410,(currentStudentIndex+1)*continuousGapSize+startGapSize-20+y);
+			inputThousandValue.show();
+			inputThousandValue.style("font-size", "14px");
+			inputThousandValue.size(60,30);
+		}		
 		shotputIsSetup = true;
 	}
 	
-	var f = shotputWholeValue.value()+"."+shotputDecimalValue.value();
+	var f;
+	
+	if (eventID >= 0 && eventID <= 2)
+		f = inputWholeValue.value()+"."+inputHundredValue.value();
+	else if (eventID >= 3 && eventID <= 5)
+		f = inputWholeValue.value()+"."+inputThousandValue.value();
 	
 //	text("final value: "+f,475,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+150+y);
 	
@@ -539,25 +648,135 @@ function showInputDataInterface()
 
 			
 		lock = true;
-		shotputWholeValue.hide();
-		shotputDecimalValue.hide();
+		inputWholeValue.hide();
+		inputHundredValue.hide();
+		inputThousandValue.hide();
 		eventData[eventID][currentStudentIndex][10] = f;
 		shotputIsSetup = false;
+		updateFinishingPlacement();
 		sendShotputData(f);
 	}
+}
+
+function updateFinishingPlacement()
+{
+
 	
+	// this is an array of the top 8
+	// a 2D array is required [finishing position][all occurrences]
+	// finishing position 0 is 1, 7 is 8
+	// all occurrences in case there are duplicate winners 
+	var topEight = [[]];
+	
+	topEight = new Array(8);
+	
+//console.log("Finding Top 8");
+	// find all the top 8 
+	// 
+	var nextHighestValue = -1;
+	for (var g = 0; g < topEight.length; g++)
+	{
+		topEight[g] = new Array(0);
+
+		
+		// look for higher values
+		for (var h = 0; h < eventRows[eventID]; h++)
+		{
+			if (g > 0 && topEight[g-1][0] > 0)
+			{
+				nextHighestValue = topEight[g-1][0];
+				if (parseFloat(eventData[eventID][h][10]) > 0 && topEight[g].length == 0 && parseFloat(eventData[eventID][h][10]) < nextHighestValue)
+				{
+					topEight[g].push(eventData[eventID][h][10]);
+				}
+				else if (topEight[g].length > 0 && parseFloat(eventData[eventID][h][10]) > parseFloat(topEight[g][0])  && parseFloat(eventData[eventID][h][10]) < nextHighestValue)
+				{
+					while (topEight[g].length > 0)
+						topEight[g].pop();
+				
+					topEight[g].push(eventData[eventID][h][10]);
+				}
+				else if (topEight[g].length > 0 && parseFloat(eventData[eventID][h][10]) == parseFloat(topEight[g][0]) && parseFloat(eventData[eventID][h][10]) < nextHighestValue)
+				{
+					topEight[g].push(eventData[eventID][h][10]);
+				}
+			} // if g > 0
+			else if (g == 0)
+			{
+				if (parseFloat(eventData[eventID][h][10]) > 0 && topEight[0].length == 0)
+				{
+					topEight[0].push(eventData[eventID][h][10]);
+				}
+				else if (topEight[0].length > 0 && parseFloat(eventData[eventID][h][10]) > parseFloat(topEight[0][0]))
+				{
+					while (topEight[0].length > 0)
+						topEight[0].pop();
+				
+					topEight[0].push(eventData[eventID][h][10]);
+				}
+				else if (topEight[0].length > 0 && parseFloat(eventData[eventID][h][10]) == parseFloat(topEight[0][0]))
+				{
+					topEight[0].push(eventData[eventID][h][10]);
+				}
+			}
+//console.log("nextHighestValue "+nextHighestValue);
+
+			/*
+			// data
+			localEventData[g][2] = eventData[g][10];
+			
+			// finish position
+			localEventData[g][3] = eventData[g][5];
+			
+			// change boolean flag
+
+			*/
+
+		}
+	}
+
+	for (var g = 0; g < topEight.length; g++)
+	{
+		if (topEight[g][0] != null && topEight[g][0] > 0)
+		{
+			for (var h = 0; h < eventRows[eventID]; h++)
+			{
+
+
+				if (topEight[g][0] == eventData[eventID][h][10])
+				{
+//console.log("Storing into localEventData "+topEight[g][0]+"   "+(g+1));
+					fill(255,255,255);
+					localEventData[eventID][h][2] = topEight[g][0];
+					localEventData[eventID][h][3] = (g+1);
+					localEventData[eventID][h][4] = true;
+				}
+					fill(255,255,255);
+
+			}		
+		}
+	}
+
+			// show place
+//		if (localEventData[showEvent][r][0] != null)
+//			text(localEventData[showEvent][r][3],col6+moreH,(r+1)*continuousGapSize+startGapSize);
 
 }
 
 function sendShotputData(newShotputtData)
 {
+	// submit current data regardless
 	// start - submit the data back to the spreadsheet
 	formData = new FormData();
+	
+	localEventData[eventID][currentStudentIndex][2]=newShotputtData;
+	
 	formData.append("Sheet Name","Grade"+currentGrade);
 	formData.append("Student ID",eventData[eventID][currentStudentIndex][1]);
 	formData.append("Event",eventData[eventID][currentStudentIndex][3]);
 //	formData.append("Data",eventData[eventID][currentStudentIndex][10]);
 	formData.append("Data",newShotputtData);
+
 	if (eventID == 0)
 		formData.append("UpdateEvent","shotputt");
 	else if (eventID == 1)
@@ -570,14 +789,192 @@ function sendShotputData(newShotputtData)
 		formData.append("UpdateEvent","200m");
 	else if (eventID == 5)
 		formData.append("UpdateEvent","400m");
+		
+		
+	formData.append("Finish Position",localEventData[eventID][currentStudentIndex][3]);
 
 
 	var request = new XMLHttpRequest();
+	
+	var httpSendRequestArray2 = new Array(3);
+	
+	
+	httpSendRequestArray.push(httpSendRequestArray2);
+	
+	httpSendRequestArray[httpSendRequestArray.length-1][0] = request;
+	httpSendRequestArray[httpSendRequestArray.length-1][1] = currentStudentIndex;
+	httpSendRequestArray[httpSendRequestArray.length-1][2] = newShotputtData;
+
+/*
+	request.onreadystatechange = function () {
+            if (request.readyState == 4 && request.status == 200) {
+                console.log( request.responseText );
+            }
+        }
+        */
 
 	// MARK - MUST CHANGE 2
-	request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
-	request.send(formData);
+	httpSendRequestArray[httpSendRequestArray.length-1][0].open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
+	
+//httpSendRequestArray[httpSendRequestArray.length-1][0].setRequestHeader('Access-Control-Allow-Origin', '*');
+//    httpSendRequestArray[httpSendRequestArray.length-1][0].setRequestHeader('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
+//    httpSendRequestArray[httpSendRequestArray.length-1][0].setRequestHeader('Access-Control-Allow-Headers', 'accept, content-type, x-parse-application-id, x-parse-rest-api-key, x-parse-session-token');
+     // intercept OPTIONS method
+//	httpSendRequestArray[httpSendRequestArray.length-1][0].setRequestHeader("Content-type", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
+
+
+//	request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
+//	console.log("ready state "+request.readyState);
+//	console.log("status "+request.status);
+
+/*
+request.onprogress = function(pe) {
+    if(pe.lengthComputable) {
+      console.log(pe.loaded/pe.total);
+    }
+  }
+*/
+	
+	localEventData[eventID][currentStudentIndex][5] = 1;
+	
+	
+	
+	
+	/*
+	request.onprogress = function () {
+//		console.log(currentStudentIndex+"  LOADING  "+request.readyState); // readyState will be 3
+		
+	};
+	*/
+
+//	var q = httpSendRequestArray[httpSendRequestArray.length-1][1];
+
+//httpSendRequestArray[httpSendRequestArray.length-1][0].onload = handleAcknowledgement(httpSendRequestArray[httpSendRequestArray.length-1][1],httpSendRequestArray[httpSendRequestArray.length-1][0]);
+
+/*
+	httpSendRequestArray[httpSendRequestArray.length-1][0].onreadystatechange = function () {
+		console.log(httpSendRequestArray[httpSendRequestArray.length-1][1]+"  DONE  "+ httpSendRequestArray[httpSendRequestArray.length-1][0].readyState); // readyState will be 4
+		
+		// success
+		if (httpSendRequestArray[httpSendRequestArray.length-1][0].readyState == 1 ||
+		    httpSendRequestArray[httpSendRequestArray.length-1][0].readyState == 4)
+		{
+			localEventData[eventID][httpSendRequestArray[httpSendRequestArray.length-1][1]][5] = 2;
+			
+		}
+	};
+*/
+/*
+	request.onload = function (currentStudentIndex) {
+		console.log('DONE', request.readyState); // readyState will be 4
+		
+		// success
+		if (request.readyState == 1)
+			localEventData[eventID][ppp][5] = 2;
+	};
+*/	
+/*
+	request.onerror = function () {
+//		console.log(currentStudentIndex+"  ERROR  "+request.readyState); // 
+
+	
+		// unsuccessful
+//		if (request.readyState == 4)
+//			localEventData[eventID][currentStudentIndex][5] = 3;
+	
+	};
+*/
+	httpSendRequestArray[httpSendRequestArray.length-1][0].send(formData);
+//	request.send(formData);
+
+//	console.log("ready state "+request.readyState);
+//	console.log("status "+request.status);
+//	console.log(request.responseText);
+	
+/*
+	while (request.readyState != 4)
+	{
+		console.log("ready state "+request.readyState);
+	}
+	*/
+	/*
+	for (var aa = 0; aa < 10000; aa++)
+	{
+		console.log(aa+" ready state "+request.readyState);
+		console.log(aa+" status "+request.status);
+		console.log(request.responseText);	
+	}
+	*/
+
+
 	// end - submit data back to the spreadsheet	
+
+
+	// update all other placements
+	for (var q = 0; q < eventRows[eventID]; q++)
+	{
+		if (localEventData[eventID][q][4] == true)
+		{
+			// start - submit the data back to the spreadsheet
+			formData = new FormData();
+			formData.append("Sheet Name","Grade"+currentGrade);
+			formData.append("Student ID",localEventData[eventID][q][0]);
+			formData.append("Event",localEventData[eventID][q][1]);
+		//	formData.append("Data",eventData[eventID][currentStudentIndex][10]);
+			formData.append("Data",localEventData[eventID][q][2]);
+
+			if (eventID == 0)
+				formData.append("UpdateEvent","shotputt");
+			else if (eventID == 1)
+				formData.append("UpdateEvent","long jump");
+			else if (eventID == 2)
+				formData.append("UpdateEvent","discus");
+			else if (eventID == 3)
+				formData.append("UpdateEvent","100m");
+			else if (eventID == 4)
+				formData.append("UpdateEvent","200m");
+			else if (eventID == 5)
+				formData.append("UpdateEvent","400m");
+				
+				
+			formData.append("Finish Position",localEventData[eventID][q][3]);
+
+
+			var request = new XMLHttpRequest();
+
+			// MARK - MUST CHANGE 2
+			request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
+			request.send(formData);
+			// end - submit data back to the spreadsheet	
+		}
+	}
+}
+
+function handleAcknowledgement() {
+	currentTime = second();
+	
+	if (abs(previousTime - currentTime) > 3)
+	{
+		previousTime = currentTime;
+		console.log(currentTime); // readyState will be 4
+
+		var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+		query.send(handleUpdateQueryResponse);
+
+	}
+	
+
+/*
+		console.log(e+"  DONE  "+ r.readyState); // readyState will be 4
+		
+		// success
+		if (r.readyState == 1 ||
+		    r.readyState == 4)
+		{
+			localEventData[eventID][e][5] = 2;
+			
+		}
+		*/
 }
 
 
@@ -606,11 +1003,25 @@ function drawButtons()
 		if ((touchIsDown || mouseIsPressed) && !lock && mouseX > 10 && mouseX < 10+100 &&
 			mouseY > 10+buttonGap*(b+1) && mouseY < 10+buttonGap*(b+1)+50)
 		{	
-			currentGrade = b+6;
-			var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+			// check if they really want to leave as data sent has not been updated yet
+			// WARNING POSSIBLE DATA LOSS
+			if (httpSendRequestArray.length > 0)
+			{
+				previousEvent = eventUse;
+				previousGrade = currentGrade;
+				currentGrade = b+6;
+				eventUse = "warning";	
+				lock = true;		
+			}
+			else
+			{
+				currentGrade = b+6;
+				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
 
-			query.send(handleQueryResponse);
-			lock = true;
+				query.send(handleQueryResponse);
+				buttonIsSetup = false;
+				lock = true;
+			}
 		}
 	}
 	
@@ -622,11 +1033,25 @@ function drawButtons()
 	if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 10 && mouseX < 10+100 &&
 		mouseY > 10 && mouseY < 10+50)
 	{
-		eventUse = "event menu";
-		lock = true;
+		// check if they really want to leave as data sent has not been updated yet
+		// WARNING POSSIBLE DATA LOSS
+		if (httpSendRequestArray.length > 0)
+		{
+			previousEvent = eventUse;
+			previousGrade = currentGrade;
+			currentGrade = b+6;
+			eventUse = "warning";	
+			lock = true;		
+		}
+		else
+		{
+			eventUse = "event menu";
+			lock = true;
+		}
 	}
 
 }
+
 
 function showEventData(showEvent)
 {
@@ -641,7 +1066,7 @@ function showEventData(showEvent)
 	col3 = 230;
 	col4 = 300;
 	col5 = 390;
-//	col6 = 460;
+	col6 = 460;
 
 	fill(255,255,255);
 	moreH = 125;
@@ -652,6 +1077,8 @@ function showEventData(showEvent)
 	text("Student ID",col3+moreH,startGapSize);
 	text("House",col4+moreH,startGapSize);
 	text("Gender",col5+moreH,startGapSize);
+	text("Place",col6+moreH,startGapSize);
+	
 //	text("Event",col6+moreH,startGapSize);
 
 	textSize(25);
@@ -687,6 +1114,7 @@ function showEventData(showEvent)
 */
 
 
+
 	var gold = [];
 	var silver = [];
 	var bronze = [];
@@ -695,6 +1123,34 @@ function showEventData(showEvent)
 
 	for (var r = 0; r < eventRows[showEvent]; r++)
 	{
+	
+	
+	
+		fill(255,255,255);
+	
+	/*
+		for (var sa = 0; sa < sendArray.length; sa++)
+		{
+			// show if data is being sent or done
+			if (localEventData[eventID][r][5] == 1)
+				text("Sending Data",col6+moreH+100,(sendArray[sa])*continuousGapSize+startGapSize);
+			else if (localEventData[eventID][r][5] == 2)
+				text("Successful",col6+moreH+100,(sendArray[sa])*continuousGapSize+startGapSize);
+			else if (localEventData[eventID][r][5] == 3)
+				text("Failed to send",col6+moreH+100,(sendArray[sa])*continuousGapSize+startGapSize);
+		
+		}
+*/
+
+		// show if data is being sent or done
+		if (localEventData[eventID][r][5] == 1)
+			text("Sending Data",col6+moreH+100,(r+1)*continuousGapSize+startGapSize);
+		else if (localEventData[eventID][r][5] == 2)
+			text("Successful",col6+moreH+100,(r+1)*continuousGapSize+startGapSize);
+		else if (localEventData[eventID][r][5] == 3)
+			text("Failed to send",col6+moreH+100,(r+1)*continuousGapSize+startGapSize);
+
+	
 		hoverOverGapSize = 8;
 		// highlight where the mouse hovering over with a green background
 		if (mouseY > (r)*continuousGapSize+startGapSize+hoverOverGapSize && 
@@ -720,6 +1176,13 @@ function showEventData(showEvent)
 		{
 			fill(255,255,255);
 		}
+
+
+
+
+		// show place
+		if (localEventData[showEvent][r][0] != "")
+			text(localEventData[showEvent][r][3],col6+moreH,(r+1)*continuousGapSize+startGapSize);
 
 
 		// populate data
@@ -750,58 +1213,34 @@ function showEventData(showEvent)
 			
 			if (c == 10)
 			{
-				// place the shotput data appropriately			
-				if (eventData[showEvent][r][c].toString().length == 4)
-					text(eventData[showEvent][r][c],col2+moreH+6,(r+1)*continuousGapSize+startGapSize);
-				else
-					text(eventData[showEvent][r][c],col2+moreH,(r+1)*continuousGapSize+startGapSize);
-
-				// create an array of floating point numbers
-				medalFloat[r] = eventData[showEvent][r][c].toString();
-
-
-
-				if (medalFloat[r] > 0)
+				// if events are based on highest value being a winner
+				if (showEvent >= 0 && showEvent <= 2)
 				{
-
-					// is gold empty?
-					if (gold.length == 0)
-						gold.push(r);
-						
-					// are you equal to gold?
-					else if (gold.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][gold[0]][c].toString()))
-					{
-						gold.push(r);					
-					}
-					// are you greater than gold?  shift everything
-					else if (gold.length > 0 && medalFloat[r] > parseFloat(eventData[showEvent][gold[0]][c].toString()))
-					{
-						while (bronze.length > 0)
-							bronze.pop();
-					
-						while (silver.length > 0)
-							bronze.push(silver.pop());
-							
-						while (gold.length > 0)
-							silver.push(gold.pop());
-							
-						gold.push(r);
-					}
-					// otherwise you must be less than gold
+					// place the shot putt, long jump and discus data appropriately			
+					if (eventData[showEvent][r][c].toString().length == 4)
+						text(eventData[showEvent][r][c],col2+moreH+6,(r+1)*continuousGapSize+startGapSize);
 					else
+						text(eventData[showEvent][r][c],col2+moreH,(r+1)*continuousGapSize+startGapSize);
+
+					// create an array of floating point numbers
+					medalFloat[r] = eventData[showEvent][r][c].toString();
+
+
+					// find medalist for shot putt, long jump, discus
+					if (medalFloat[r] > 0)
 					{
-						// is silver empty?
-						if (silver.length == 0)
-							silver.push(r);
-							
-						// are you equal to silver?
-						else if (silver.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][silver[0]][c].toString()))
-						{
-							silver.push(r);
-						}
+
+						// is gold empty?
+						if (gold.length == 0)
+							gold.push(r);
 						
-						// are you greater than silver?
-						else if (silver.length > 0 && medalFloat[r] > parseFloat(eventData[showEvent][silver[0]][c].toString()))
+						// are you equal to gold?
+						else if (gold.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][gold[0]][c].toString()))
+						{
+							gold.push(r);					
+						}
+						// are you greater than gold?  shift everything
+						else if (gold.length > 0 && medalFloat[r] > parseFloat(eventData[showEvent][gold[0]][c].toString()))
 						{
 							while (bronze.length > 0)
 								bronze.pop();
@@ -809,34 +1248,157 @@ function showEventData(showEvent)
 							while (silver.length > 0)
 								bronze.push(silver.pop());
 							
-							silver.push(r);
+							while (gold.length > 0)
+								silver.push(gold.pop());
+							
+							gold.push(r);
 						}
-						
-						// otherwise you must be less than silver
+						// otherwise you must be less than gold
 						else
 						{
-							// is bronze empty?
-							if (bronze.length == 0)
-								bronze.push(r);
+							// is silver empty?
+							if (silver.length == 0)
+								silver.push(r);
 							
-							// are you equal to bronze?
-							else if (bronze.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][bronze[0]][c].toString()))
+							// are you equal to silver?
+							else if (silver.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][silver[0]][c].toString()))
 							{
-								bronze.push(r);
+								silver.push(r);
 							}
 						
-							// are you greater than bronze?
-							else if (bronze.length > 0 && medalFloat[r] > parseFloat(eventData[showEvent][bronze[0]][c].toString()))
+							// are you greater than silver?
+							else if (silver.length > 0 && medalFloat[r] > parseFloat(eventData[showEvent][silver[0]][c].toString()))
 							{
 								while (bronze.length > 0)
 									bronze.pop();
-												
-								bronze.push(r);
+					
+								while (silver.length > 0)
+									bronze.push(silver.pop());
+							
+								silver.push(r);
 							}
 						
-						} // else less than silver
-					} // else less than gold
-				} // if medal value > 0
+							// otherwise you must be less than silver
+							else
+							{
+								// is bronze empty?
+								if (bronze.length == 0)
+									bronze.push(r);
+							
+								// are you equal to bronze?
+								else if (bronze.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][bronze[0]][c].toString()))
+								{
+									bronze.push(r);
+								}
+						
+								// are you greater than bronze?
+								else if (bronze.length > 0 && medalFloat[r] > parseFloat(eventData[showEvent][bronze[0]][c].toString()))
+								{
+									while (bronze.length > 0)
+										bronze.pop();
+												
+									bronze.push(r);
+								}
+						
+							} // else less than silver
+						} // else less than gold
+					} // if medal value > 0
+				} // if finding the highest value winner
+				
+
+				// if events are based on lowest value being a winner
+				if (showEvent >= 3 && showEvent <= 5)
+				{
+					// place the shot putt, long jump and discus data appropriately			
+					if (eventData[showEvent][r][c].toString().length == 4)
+						text(eventData[showEvent][r][c],col2+moreH+6,(r+1)*continuousGapSize+startGapSize);
+					else
+						text(eventData[showEvent][r][c],col2+moreH,(r+1)*continuousGapSize+startGapSize);
+
+					// create an array of floating point numbers
+					medalFloat[r] = eventData[showEvent][r][c].toString();
+
+
+					// find medalist for shot putt, long jump, discus
+					if (medalFloat[r] > 0)
+					{
+
+						// is gold empty?
+						if (gold.length == 0)
+							gold.push(r);
+						
+						// are you equal to gold?
+						else if (gold.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][gold[0]][c].toString()))
+						{
+							gold.push(r);					
+						}
+						// are you faster than gold?  shift everything
+						else if (gold.length > 0 && medalFloat[r] < parseFloat(eventData[showEvent][gold[0]][c].toString()))
+						{
+							while (bronze.length > 0)
+								bronze.pop();
+					
+							while (silver.length > 0)
+								bronze.push(silver.pop());
+							
+							while (gold.length > 0)
+								silver.push(gold.pop());
+							
+							gold.push(r);
+						}
+						// otherwise you must be slower than gold
+						else
+						{
+							// is silver empty?
+							if (silver.length == 0)
+								silver.push(r);
+							
+							// are you equal to silver?
+							else if (silver.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][silver[0]][c].toString()))
+							{
+								silver.push(r);
+							}
+						
+							// are you faster than silver?
+							else if (silver.length > 0 && medalFloat[r] < parseFloat(eventData[showEvent][silver[0]][c].toString()))
+							{
+								while (bronze.length > 0)
+									bronze.pop();
+					
+								while (silver.length > 0)
+									bronze.push(silver.pop());
+							
+								silver.push(r);
+							}
+						
+							// otherwise you must be slower than silver
+							else
+							{
+								// is bronze empty?
+								if (bronze.length == 0)
+									bronze.push(r);
+							
+								// are you equal to bronze?
+								else if (bronze.length > 0 && medalFloat[r] == parseFloat(eventData[showEvent][bronze[0]][c].toString()))
+								{
+									bronze.push(r);
+								}
+						
+								// are you greater than bronze?
+								else if (bronze.length > 0 && medalFloat[r] < parseFloat(eventData[showEvent][bronze[0]][c].toString()))
+								{
+									while (bronze.length > 0)
+										bronze.pop();
+												
+									bronze.push(r);
+								}
+						
+							} // else less than silver
+						} // else less than gold
+					} // if medal value > 0
+				} // if finding the lowest value winner
+
+				
 			} // if c > 10
 		} // for loop columns
 	} // for loop rows
