@@ -18,7 +18,7 @@ var httpSendRequestArray = [[]];
 var previousTime;
 var previousEvent;
 var previousGrade;
-
+var boyOrGirl;
 
 function setup(){
 	//create a drawing service 500px wide, 500px tall
@@ -28,6 +28,7 @@ function setup(){
 	buttonIsSetup = false;
 	previousTime = second();
 
+	boyOrGirl = "Boys";
 	thimble = false;
 	testing = true;
 	dataSubmitted = false;
@@ -296,6 +297,7 @@ function showHouseData()
 function showEventMenu()
 {
 	buttonGap = 60;
+	strokeWeight(0);
 
 	// ------------- IF ribbon button is pressed setup -------------	
 	if (eventUse == "ribbons")
@@ -682,7 +684,8 @@ function updateFinishingPlacement()
 		// look for higher values
 		for (var h = 0; h < eventRows[eventID]; h++)
 		{
-			if (g > 0 && topEight[g-1][0] > 0)
+//		console.log(""+eventData[eventID][h][4]+"vs"+boyOrGirl+"="+(eventData[eventID][h][4] == boyOrGirl));
+			if (g > 0 && topEight[g-1][0] > 0 && eventData[eventID][h][4] == boyOrGirl)
 			{
 				nextHighestValue = topEight[g-1][0];
 				if (parseFloat(eventData[eventID][h][10]) > 0 && topEight[g].length == 0 && parseFloat(eventData[eventID][h][10]) < nextHighestValue)
@@ -701,7 +704,7 @@ function updateFinishingPlacement()
 					topEight[g].push(eventData[eventID][h][10]);
 				}
 			} // if g > 0
-			else if (g == 0)
+			else if (g == 0 && eventData[eventID][h][4] == boyOrGirl)
 			{
 				if (parseFloat(eventData[eventID][h][10]) > 0 && topEight[0].length == 0)
 				{
@@ -757,7 +760,7 @@ function updateFinishingPlacement()
 		}
 	}
 
-			// show place
+	// show place
 //		if (localEventData[showEvent][r][0] != null)
 //			text(localEventData[showEvent][r][3],col6+moreH,(r+1)*continuousGapSize+startGapSize);
 
@@ -816,95 +819,11 @@ function sendShotputData(newShotputtData)
 	// MARK - MUST CHANGE 2
 	httpSendRequestArray[httpSendRequestArray.length-1][0].open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
 	
-//httpSendRequestArray[httpSendRequestArray.length-1][0].setRequestHeader('Access-Control-Allow-Origin', '*');
-//    httpSendRequestArray[httpSendRequestArray.length-1][0].setRequestHeader('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
-//    httpSendRequestArray[httpSendRequestArray.length-1][0].setRequestHeader('Access-Control-Allow-Headers', 'accept, content-type, x-parse-application-id, x-parse-rest-api-key, x-parse-session-token');
-     // intercept OPTIONS method
-//	httpSendRequestArray[httpSendRequestArray.length-1][0].setRequestHeader("Content-type", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
-
-
-//	request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
-//	console.log("ready state "+request.readyState);
-//	console.log("status "+request.status);
-
-/*
-request.onprogress = function(pe) {
-    if(pe.lengthComputable) {
-      console.log(pe.loaded/pe.total);
-    }
-  }
-*/
-	
 	localEventData[eventID][currentStudentIndex][5] = 1;
 	
-	
-	
-	
-	/*
-	request.onprogress = function () {
-//		console.log(currentStudentIndex+"  LOADING  "+request.readyState); // readyState will be 3
-		
-	};
-	*/
 
-//	var q = httpSendRequestArray[httpSendRequestArray.length-1][1];
-
-//httpSendRequestArray[httpSendRequestArray.length-1][0].onload = handleAcknowledgement(httpSendRequestArray[httpSendRequestArray.length-1][1],httpSendRequestArray[httpSendRequestArray.length-1][0]);
-
-/*
-	httpSendRequestArray[httpSendRequestArray.length-1][0].onreadystatechange = function () {
-		console.log(httpSendRequestArray[httpSendRequestArray.length-1][1]+"  DONE  "+ httpSendRequestArray[httpSendRequestArray.length-1][0].readyState); // readyState will be 4
-		
-		// success
-		if (httpSendRequestArray[httpSendRequestArray.length-1][0].readyState == 1 ||
-		    httpSendRequestArray[httpSendRequestArray.length-1][0].readyState == 4)
-		{
-			localEventData[eventID][httpSendRequestArray[httpSendRequestArray.length-1][1]][5] = 2;
-			
-		}
-	};
-*/
-/*
-	request.onload = function (currentStudentIndex) {
-		console.log('DONE', request.readyState); // readyState will be 4
-		
-		// success
-		if (request.readyState == 1)
-			localEventData[eventID][ppp][5] = 2;
-	};
-*/	
-/*
-	request.onerror = function () {
-//		console.log(currentStudentIndex+"  ERROR  "+request.readyState); // 
-
-	
-		// unsuccessful
-//		if (request.readyState == 4)
-//			localEventData[eventID][currentStudentIndex][5] = 3;
-	
-	};
-*/
 	httpSendRequestArray[httpSendRequestArray.length-1][0].send(formData);
 //	request.send(formData);
-
-//	console.log("ready state "+request.readyState);
-//	console.log("status "+request.status);
-//	console.log(request.responseText);
-	
-/*
-	while (request.readyState != 4)
-	{
-		console.log("ready state "+request.readyState);
-	}
-	*/
-	/*
-	for (var aa = 0; aa < 10000; aa++)
-	{
-		console.log(aa+" ready state "+request.readyState);
-		console.log(aa+" status "+request.status);
-		console.log(request.responseText);	
-	}
-	*/
 
 
 	// end - submit data back to the spreadsheet	
@@ -983,7 +902,7 @@ function handleAcknowledgement() {
 function drawButtons()
 {
 	var buttonGap = 60;
-
+	strokeWeight(0);
 	// ---------------------- IF Grade level button is pressed --------------------
 	for (var b = 0; b < 7; b++)
 	{
@@ -1025,6 +944,8 @@ function drawButtons()
 		}
 	}
 	
+	
+	// ---------------------- IF Other event level button is pressed --------------------
 	fill(141,252,255);
 	rect(10,10,100,50);
 	fill(0,0,0);
@@ -1049,6 +970,96 @@ function drawButtons()
 			lock = true;
 		}
 	}
+
+	// ---------------------- IF Other event level button is pressed --------------------
+	if (eventUse == "shotput" || eventUse == "long jump" || eventUse == "discus" ||
+		eventUse == "100m" || eventUse == "200m" || eventUse == "400m")
+	{	
+
+		fill(118,247,235);
+		rect(470,15,70,30);
+		fill(0,0,0);
+		text("Boys",492,35);
+		
+		fill(246,141,236);
+		rect(470+70,15,70,30);
+		fill(0,0,0);
+		text("Girls",492+70,35);
+		
+		if (boyOrGirl == "Boys")
+		{
+			// Boys ring
+			noFill();
+			strokeWeight(5);
+			stroke(43,78,220);
+			rect(470,15,70,30);
+			strokeWeight(0);
+		}
+		else if (boyOrGirl == "Girls")
+		{
+			// Girls ring
+			noFill();
+			strokeWeight(5);
+			stroke(175,35,203);
+			rect(470+70,15,70,30);
+			strokeWeight(0);
+		}
+
+					
+		
+		if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 470 && mouseX < 470+70 && 
+		    mouseY > 15 && mouseY < 15+30)
+		{
+			// check if they really want to leave as data sent has not been updated yet
+			// WARNING POSSIBLE DATA LOSS
+			if (httpSendRequestArray.length > 0)
+			{
+				previousEvent = eventUse;
+				previousGrade = currentGrade;
+				eventUse = "warning";	
+				lock = true;		
+			}
+			else
+			{
+				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+
+				query.send(handleQueryResponse);
+				buttonIsSetup = false;
+				lock = true;
+				boyOrGirl = "Boys";
+
+			}
+
+
+		}
+		if ((mouseIsPressed || touchIsDown) && !lock && mouseX > 540 && mouseX < 540+70 && 
+		    mouseY > 15 && mouseY < 15+30)
+		{
+			// check if they really want to leave as data sent has not been updated yet
+			// WARNING POSSIBLE DATA LOSS
+			if (httpSendRequestArray.length > 0)
+			{
+				previousEvent = eventUse;
+				previousGrade = currentGrade;
+				eventUse = "warning";	
+				lock = true;		
+			}
+			else
+			{
+				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/'+spreadsheetID+'/gviz/tq?sheet=Grade'+currentGrade+'&tq=SELECT*');
+
+				query.send(handleQueryResponse);
+				buttonIsSetup = false;
+				lock = true;
+				boyOrGirl = "Girls";
+
+			}
+		}
+
+		
+
+	}
+	strokeWeight(0);
 
 }
 
@@ -1182,8 +1193,22 @@ function showEventData(showEvent)
 
 		// show place
 		if (localEventData[showEvent][r][0] != "")
+		{
 			text(localEventData[showEvent][r][3],col6+moreH,(r+1)*continuousGapSize+startGapSize);
-
+			if (localEventData[showEvent][r][3] == 1)
+			{
+				gold.push(r);
+			}
+			else if (localEventData[showEvent][r][3] == 2)
+			{
+				silver.push(r);
+//				console.log(eventData[showEvent][r][0]+"  "+localEventData[showEvent][r][3]+" Silver found");
+			}
+			else if (localEventData[showEvent][r][3] == 3)
+			{
+				bronze.push(r);
+			}
+		}
 
 		// populate data
 		for (var c = 0; c < maxCols; c++)
@@ -1213,6 +1238,7 @@ function showEventData(showEvent)
 			
 			if (c == 10)
 			{
+
 				// if events are based on highest value being a winner
 				if (showEvent >= 0 && showEvent <= 2)
 				{
@@ -1222,6 +1248,7 @@ function showEventData(showEvent)
 					else
 						text(eventData[showEvent][r][c],col2+moreH,(r+1)*continuousGapSize+startGapSize);
 
+			/*
 					// create an array of floating point numbers
 					medalFloat[r] = eventData[showEvent][r][c].toString();
 
@@ -1303,8 +1330,9 @@ function showEventData(showEvent)
 							} // else less than silver
 						} // else less than gold
 					} // if medal value > 0
+									*/
 				} // if finding the highest value winner
-				
+
 
 				// if events are based on lowest value being a winner
 				if (showEvent >= 3 && showEvent <= 5)
@@ -1315,6 +1343,7 @@ function showEventData(showEvent)
 					else
 						text(eventData[showEvent][r][c],col2+moreH,(r+1)*continuousGapSize+startGapSize);
 
+/*
 					// create an array of floating point numbers
 					medalFloat[r] = eventData[showEvent][r][c].toString();
 
@@ -1396,13 +1425,15 @@ function showEventData(showEvent)
 							} // else less than silver
 						} // else less than gold
 					} // if medal value > 0
+					*/
 				} // if finding the lowest value winner
 
 				
 			} // if c > 10
 		} // for loop columns
 	} // for loop rows
-	
+
+
 	
 	// eliminate medalist when there are duplicates
 	// if there are 3 or more gold medalists there should be no others

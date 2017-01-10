@@ -225,7 +225,7 @@ function handleUpdateQueryResponse(response) {
 					xalldata[r][c] = info;	
 				}
 			}
-			if (xalldata[r][3] == aevent)		
+			if (xalldata[r][3] == aevent && xalldata[r][4] == boyOrGirl)		
 			{
 				yalldata.push(xalldata[r]);
 			}
@@ -237,7 +237,9 @@ function handleUpdateQueryResponse(response) {
 	{
 		for (var i = 0; i < httpSendRequestArray.length; i++)
 		{
-		
+//console.log((yalldata[r][4] == boyOrGirl)+"  "+yalldata[r][4]+"="+boyOrGirl);
+//console.log((yalldata[r][3] == aevent)+"  "+yalldata[r][3]+"="+aevent);
+//console.log((r == httpSendRequestArray[i][1])+"  "+r+"="+httpSendRequestArray[i][1]);
 			if (r == httpSendRequestArray[i][1] && yalldata[r][3] == aevent)
 			{
 				if (parseFloat(yalldata[r][10].toString()) == parseFloat(localEventData[eventID][r][2].toString()))
@@ -251,8 +253,10 @@ function handleUpdateQueryResponse(response) {
 					for (var j = 0; j < httpSendRequestArray.length; j++)
 					{
 						if (r == httpSendRequestArray[j][1])
-						httpSendRequestArray.splice(j,1);
-						j--;
+						{
+							httpSendRequestArray.splice(j,1);
+							j--;
+						}
 					}
 						 
 				}
@@ -404,277 +408,279 @@ function handleQueryResponse(response) {
 			localEventData[x][eventRows[x]][4] = false;
 			localEventData[x][eventRows[x]][5] = 0;
 		
-			if (x == 0 && alldata[r][3] == "Shot Putt")
+			if (alldata[r][4] == boyOrGirl)
 			{
-				eventMark = x;
-				eventData[x][eventRows[x]] = new Array(maxCols);
-		
-				for (var c = 0; c < maxCols; c++)
+				if (x == 0 && alldata[r][3] == "Shot Putt")
 				{
-					if (c == 10 && alldata[r][c] == "")
+					eventMark = x;
+					eventData[x][eventRows[x]] = new Array(maxCols);
+		
+					for (var c = 0; c < maxCols; c++)
 					{
-						eventData[x][eventRows[x]][c] = "0.00";			
-					}
-					else 
-					{
-						if (c == 10)
+						if (c == 10 && alldata[r][c] == "")
 						{
-							var d = "00";
-							var w = 0;
-							if (alldata[r][10] != 0)
+							eventData[x][eventRows[x]][c] = "0.00";			
+						}
+						else 
+						{
+							if (c == 10)
 							{
-								if (alldata[r][10].toString().indexOf('.') == -1)
+								var d = "00";
+								var w = 0;
+								if (alldata[r][10] != 0)
 								{
-									w = alldata[r][10].toString();
-									d = "00";
-								}
-								else
-								{
-									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
-									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+									if (alldata[r][10].toString().indexOf('.') == -1)
 									{
-										d += "0";				
+										w = alldata[r][10].toString();
+										d = "00";
 									}
+									else
+									{
+										w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+										d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+										if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+										{
+											d += "0";				
+										}
 				
-								}
-							}
-							eventData[x][eventRows[x]][c] = w+"."+d;	
-						}
-						else
-							eventData[x][eventRows[x]][c] = alldata[r][c];	
-					}
-				}
-				eventRows[x]++;
-			} // shotput if
-
-			if (x == 1 && alldata[r][3] == "Long Jump")
-			{
-				eventMark = x;
-				eventData[x][eventRows[x]] = new Array(maxCols);
-		
-				for (var c = 0; c < maxCols; c++)
-				{
-					if (c == 10 && alldata[r][c] == "")
-					{
-						eventData[x][eventRows[x]][c] = "0.00";			
-					}
-					else 
-					{
-						if (c == 10)
-						{
-							var d = "00";
-							var w = 0;
-							if (alldata[r][10] != 0)
-							{
-								if (alldata[r][10].toString().indexOf('.') == -1)
-								{
-									w = alldata[r][10].toString();
-									d = "00";
-								}
-								else
-								{
-									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
-									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
-									{
-										d += "0";				
 									}
+								}
+								eventData[x][eventRows[x]][c] = w+"."+d;	
+							}
+							else
+								eventData[x][eventRows[x]][c] = alldata[r][c];	
+						}
+					}
+					eventRows[x]++;
+				} // shotput if
+
+				if (x == 1 && alldata[r][3] == "Long Jump")
+				{
+					eventMark = x;
+					eventData[x][eventRows[x]] = new Array(maxCols);
+		
+					for (var c = 0; c < maxCols; c++)
+					{
+						if (c == 10 && alldata[r][c] == "")
+						{
+							eventData[x][eventRows[x]][c] = "0.00";			
+						}
+						else 
+						{
+							if (c == 10)
+							{
+								var d = "00";
+								var w = 0;
+								if (alldata[r][10] != 0)
+								{
+									if (alldata[r][10].toString().indexOf('.') == -1)
+									{
+										w = alldata[r][10].toString();
+										d = "00";
+									}
+									else
+									{
+										w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+										d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+										if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+										{
+											d += "0";				
+										}
 				
-								}
-							}
-							eventData[x][eventRows[x]][c] = w+"."+d;	
-						}
-						else
-							eventData[x][eventRows[x]][c] = alldata[r][c];	
-					}
-				}
-				eventRows[x]++;
-			} // long jump if
-
-			if (x == 2 && alldata[r][3] == "Discus")
-			{
-				eventMark = x;
-				eventData[x][eventRows[x]] = new Array(maxCols);
-		
-				for (var c = 0; c < maxCols; c++)
-				{
-					if (c == 10 && alldata[r][c] == "")
-					{
-						eventData[x][eventRows[x]][c] = "0.00";			
-					}
-					else 
-					{
-						if (c == 10)
-						{
-							var d = "00";
-							var w = 0;
-							if (alldata[r][10] != 0)
-							{
-								if (alldata[r][10].toString().indexOf('.') == -1)
-								{
-									w = alldata[r][10].toString();
-									d = "00";
-								}
-								else
-								{
-									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
-									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
-									{
-										d += "0";				
 									}
+								}
+								eventData[x][eventRows[x]][c] = w+"."+d;	
+							}
+							else
+								eventData[x][eventRows[x]][c] = alldata[r][c];	
+						}
+					}
+					eventRows[x]++;
+				} // long jump if
+
+				if (x == 2 && alldata[r][3] == "Discus")
+				{
+					eventMark = x;
+					eventData[x][eventRows[x]] = new Array(maxCols);
+		
+					for (var c = 0; c < maxCols; c++)
+					{
+						if (c == 10 && alldata[r][c] == "")
+						{
+							eventData[x][eventRows[x]][c] = "0.00";			
+						}
+						else 
+						{
+							if (c == 10)
+							{
+								var d = "00";
+								var w = 0;
+								if (alldata[r][10] != 0)
+								{
+									if (alldata[r][10].toString().indexOf('.') == -1)
+									{
+										w = alldata[r][10].toString();
+										d = "00";
+									}
+									else
+									{
+										w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+										d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+										if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+										{
+											d += "0";				
+										}
 				
+									}
 								}
+								eventData[x][eventRows[x]][c] = w+"."+d;	
 							}
-							eventData[x][eventRows[x]][c] = w+"."+d;	
+							else
+								eventData[x][eventRows[x]][c] = alldata[r][c];	
 						}
-						else
-							eventData[x][eventRows[x]][c] = alldata[r][c];	
 					}
-				}
-				eventRows[x]++;
-			} // if discus
+					eventRows[x]++;
+				} // if discus
 
-			if (x == 3 && alldata[r][3] == "100m")
-			{
-				eventMark = x;
-				eventData[x][eventRows[x]] = new Array(maxCols);
-		
-				for (var c = 0; c < maxCols; c++)
+				if (x == 3 && alldata[r][3] == "100m")
 				{
-					if (c == 10 && alldata[r][c] == "")
+					eventMark = x;
+					eventData[x][eventRows[x]] = new Array(maxCols);
+		
+					for (var c = 0; c < maxCols; c++)
 					{
-						eventData[x][eventRows[x]][c] = "0.000";			
-					}
-					else 
-					{
-						if (c == 10)
+						if (c == 10 && alldata[r][c] == "")
 						{
-							var d = "000";
-							var w = 0;
-							if (alldata[r][10] != 0)
-							{
-								if (alldata[r][10].toString().indexOf('.') == -1)
-								{
-									w = alldata[r][10].toString();
-									d = "000";
-								}
-								else
-								{
-									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
-									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
-									{
-										d += "00";				
-									}
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 2)
-									{
-										d += "0";
-									}
-								}
-							}
-							eventData[x][eventRows[x]][c] = w+"."+d;	
+							eventData[x][eventRows[x]][c] = "0.000";			
 						}
-						else
-							eventData[x][eventRows[x]][c] = alldata[r][c];	
+						else 
+						{
+							if (c == 10)
+							{
+								var d = "000";
+								var w = 0;
+								if (alldata[r][10] != 0)
+								{
+									if (alldata[r][10].toString().indexOf('.') == -1)
+									{
+										w = alldata[r][10].toString();
+										d = "000";
+									}
+									else
+									{
+										w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+										d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+										if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+										{
+											d += "00";				
+										}
+										if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 2)
+										{
+											d += "0";
+										}
+									}
+								}
+								eventData[x][eventRows[x]][c] = w+"."+d;	
+							}
+							else
+								eventData[x][eventRows[x]][c] = alldata[r][c];	
+						}
 					}
-				}
-				eventRows[x]++;
-			} // 100m
+					eventRows[x]++;
+				} // 100m
 			
-			if (x == 4 && alldata[r][3] == "200m")
-			{
-				eventData[x][eventRows[x]] = new Array(maxCols);
-		
-				for (var c = 0; c < maxCols; c++)
+				if (x == 4 && alldata[r][3] == "200m")
 				{
-					if (c == 10 && alldata[r][c] == "")
+					eventData[x][eventRows[x]] = new Array(maxCols);
+		
+					for (var c = 0; c < maxCols; c++)
 					{
-						eventData[x][eventRows[x]][c] = "0.000";			
-					}
-					else 
-					{
-						if (c == 10)
+						if (c == 10 && alldata[r][c] == "")
 						{
-							var d = "000";
-							var w = 0;
-							if (alldata[r][10] != 0)
-							{
-								if (alldata[r][10].toString().indexOf('.') == -1)
-								{
-									w = alldata[r][10].toString();
-									d = "000";
-								}
-								else
-								{
-									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
-									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
-									{
-										d += "00";				
-									}
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 2)
-									{
-										d += "0";
-									}
-								}
-							}
-							eventData[x][eventRows[x]][c] = w+"."+d;	
+							eventData[x][eventRows[x]][c] = "0.000";			
 						}
-						else
-							eventData[x][eventRows[x]][c] = alldata[r][c];	
+						else 
+						{
+							if (c == 10)
+							{
+								var d = "000";
+								var w = 0;
+								if (alldata[r][10] != 0)
+								{
+									if (alldata[r][10].toString().indexOf('.') == -1)
+									{
+										w = alldata[r][10].toString();
+										d = "000";
+									}
+									else
+									{
+										w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+										d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+										if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+										{
+											d += "00";				
+										}
+										if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 2)
+										{
+											d += "0";
+										}
+									}
+								}
+								eventData[x][eventRows[x]][c] = w+"."+d;	
+							}
+							else
+								eventData[x][eventRows[x]][c] = alldata[r][c];	
+						}
 					}
-				}
-				eventRows[x]++;
-			} // if 200m
+					eventRows[x]++;
+				} // if 200m
 			
-			if (x == 5 && alldata[r][3] == "400m")
-			{
-				eventData[x][eventRows[x]] = new Array(maxCols);
-		
-				for (var c = 0; c < maxCols; c++)
+				if (x == 5 && alldata[r][3] == "400m")
 				{
-					if (c == 10 && alldata[r][c] == "")
+					eventData[x][eventRows[x]] = new Array(maxCols);
+		
+					for (var c = 0; c < maxCols; c++)
 					{
-						eventData[x][eventRows[x]][c] = "0.000";			
-					}
-					else 
-					{
-						if (c == 10)
+						if (c == 10 && alldata[r][c] == "")
 						{
-							var d = "000";
-							var w = 0;
-							if (alldata[r][10] != 0)
-							{
-								if (alldata[r][10].toString().indexOf('.') == -1)
-								{
-									w = alldata[r][10].toString();
-									d = "000";
-								}
-								else
-								{
-									w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
-									d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
-									{
-										d += "00";				
-									}
-									if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 2)
-									{
-										d += "0";
-									}				
-								}
-							}
-							eventData[x][eventRows[x]][c] = w+"."+d;	
+							eventData[x][eventRows[x]][c] = "0.000";			
 						}
-						else
-							eventData[x][eventRows[x]][c] = alldata[r][c];	
+						else 
+						{
+							if (c == 10)
+							{
+								var d = "000";
+								var w = 0;
+								if (alldata[r][10] != 0)
+								{
+									if (alldata[r][10].toString().indexOf('.') == -1)
+									{
+										w = alldata[r][10].toString();
+										d = "000";
+									}
+									else
+									{
+										w = alldata[r][10].toString().substr(0,alldata[r][10].toString().indexOf('.'));			
+										d = alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length);
+										if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 1)
+										{
+											d += "00";				
+										}
+										if (alldata[r][10].toString().substr(alldata[r][10].toString().indexOf('.')+1,alldata[r][10].toString().length).length == 2)
+										{
+											d += "0";
+										}				
+									}
+								}
+								eventData[x][eventRows[x]][c] = w+"."+d;	
+							}
+							else
+								eventData[x][eventRows[x]][c] = alldata[r][c];	
+						}
 					}
-				}
-				eventRows[x]++;
-			} // if 400m
-
+					eventRows[x]++;
+				} // if 400m
+			} // Filter boys or girls
 		} // for each row in the event
 		
 
