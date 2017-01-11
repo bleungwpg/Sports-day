@@ -525,6 +525,7 @@ function showEventMenu()
 function showInputDataInterface()
 {
 	background(0,0,0);
+	strokeWeight(0);
 	var y = 50;
 	
 	// show name
@@ -616,11 +617,14 @@ function showInputDataInterface()
 	}
 	
 	var f;
+
 	
 	if (eventID >= 0 && eventID <= 2)
 		f = inputWholeValue.value()+"."+inputHundredValue.value();
 	else if (eventID >= 3 && eventID <= 5)
 		f = inputWholeValue.value()+"."+inputThousandValue.value();
+
+//	console.log("f"+f);
 	
 //	text("final value: "+f,475,(currentStudentIndex+1)*continuousGapSize+startGapSize+2+150+y);
 	
@@ -680,86 +684,171 @@ function updateFinishingPlacement()
 	{
 		topEight[g] = new Array(0);
 
-		
-		// look for higher values
-		for (var h = 0; h < eventRows[eventID]; h++)
-		{
-//		console.log(""+eventData[eventID][h][4]+"vs"+boyOrGirl+"="+(eventData[eventID][h][4] == boyOrGirl));
-			if (g > 0 && topEight[g-1][0] > 0 && eventData[eventID][h][4] == boyOrGirl)
-			{
-				nextHighestValue = topEight[g-1][0];
-				if (parseFloat(eventData[eventID][h][10]) > 0 && topEight[g].length == 0 && parseFloat(eventData[eventID][h][10]) < nextHighestValue)
-				{
-					topEight[g].push(eventData[eventID][h][10]);
-				}
-				else if (topEight[g].length > 0 && parseFloat(eventData[eventID][h][10]) > parseFloat(topEight[g][0])  && parseFloat(eventData[eventID][h][10]) < nextHighestValue)
-				{
-					while (topEight[g].length > 0)
-						topEight[g].pop();
-				
-					topEight[g].push(eventData[eventID][h][10]);
-				}
-				else if (topEight[g].length > 0 && parseFloat(eventData[eventID][h][10]) == parseFloat(topEight[g][0]) && parseFloat(eventData[eventID][h][10]) < nextHighestValue)
-				{
-					topEight[g].push(eventData[eventID][h][10]);
-				}
-			} // if g > 0
-			else if (g == 0 && eventData[eventID][h][4] == boyOrGirl)
-			{
-				if (parseFloat(eventData[eventID][h][10]) > 0 && topEight[0].length == 0)
-				{
-					topEight[0].push(eventData[eventID][h][10]);
-				}
-				else if (topEight[0].length > 0 && parseFloat(eventData[eventID][h][10]) > parseFloat(topEight[0][0]))
-				{
-					while (topEight[0].length > 0)
-						topEight[0].pop();
-				
-					topEight[0].push(eventData[eventID][h][10]);
-				}
-				else if (topEight[0].length > 0 && parseFloat(eventData[eventID][h][10]) == parseFloat(topEight[0][0]))
-				{
-					topEight[0].push(eventData[eventID][h][10]);
-				}
-			}
-//console.log("nextHighestValue "+nextHighestValue);
-
-			/*
-			// data
-			localEventData[g][2] = eventData[g][10];
-			
-			// finish position
-			localEventData[g][3] = eventData[g][5];
-			
-			// change boolean flag
-
-			*/
-
-		}
-	}
-
-	for (var g = 0; g < topEight.length; g++)
-	{
-		if (topEight[g][0] != null && topEight[g][0] > 0)
-		{
+		if (eventID >= 0 && eventID <= 2)
+		{		
+			// look for higher values
 			for (var h = 0; h < eventRows[eventID]; h++)
 			{
-
-
-				if (topEight[g][0] == eventData[eventID][h][10])
+	//		console.log(""+eventData[eventID][h][4]+"vs"+boyOrGirl+"="+(eventData[eventID][h][4] == boyOrGirl));
+				if (g > 0 && topEight[g-1][0] > 0 && eventData[eventID][h][4] == boyOrGirl)
 				{
-//console.log("Storing into localEventData "+topEight[g][0]+"   "+(g+1));
-					fill(255,255,255);
-					localEventData[eventID][h][2] = topEight[g][0];
-					localEventData[eventID][h][3] = (g+1);
-					localEventData[eventID][h][4] = true;
+					nextHighestValue = topEight[g-1][0];
+					if (parseFloat(eventData[eventID][h][10]) > 0 && topEight[g].length == 0 && parseFloat(eventData[eventID][h][10]) < nextHighestValue)
+					{
+						topEight[g].push(eventData[eventID][h][10]);
+					}
+					else if (topEight[g].length > 0 && parseFloat(eventData[eventID][h][10]) > parseFloat(topEight[g][0])  && parseFloat(eventData[eventID][h][10]) < nextHighestValue)
+					{
+						while (topEight[g].length > 0)
+							topEight[g].pop();
+				
+						topEight[g].push(eventData[eventID][h][10]);
+					}
+					else if (topEight[g].length > 0 && parseFloat(eventData[eventID][h][10]) == parseFloat(topEight[g][0]) && parseFloat(eventData[eventID][h][10]) < nextHighestValue)
+					{
+						topEight[g].push(eventData[eventID][h][10]);
+					}
+				} // if g > 0
+				else if (g == 0 && eventData[eventID][h][4] == boyOrGirl)
+				{
+					if (parseFloat(eventData[eventID][h][10]) > 0 && topEight[0].length == 0)
+					{
+						topEight[0].push(eventData[eventID][h][10]);
+					}
+					else if (topEight[0].length > 0 && parseFloat(eventData[eventID][h][10]) > parseFloat(topEight[0][0]))
+					{
+						while (topEight[0].length > 0)
+							topEight[0].pop();
+				
+						topEight[0].push(eventData[eventID][h][10]);
+					}
+					else if (topEight[0].length > 0 && parseFloat(eventData[eventID][h][10]) == parseFloat(topEight[0][0]))
+					{
+						topEight[0].push(eventData[eventID][h][10]);
+					}
 				}
-					fill(255,255,255);
 
-			}		
+			} // for look for higher values
+		} // if looking for lowest values
+		if (eventID >= 3 && eventID <= 5)
+		{		
+			// look for higher values
+			for (var h = 0; h < eventRows[eventID]; h++)
+			{
+				// filter for non-zero values only
+				if (parseFloat(eventData[eventID][h][10]) > 0)
+				{
+		//		console.log(""+eventData[eventID][h][4]+"vs"+boyOrGirl+"="+(eventData[eventID][h][4] == boyOrGirl));
+					if (g > 0 && topEight[g-1][0] > 0 && eventData[eventID][h][4] == boyOrGirl)
+					{
+						nextHighestValue = topEight[g-1][0];
+						if (parseFloat(eventData[eventID][h][10]) > 0 && topEight[g].length == 0 && parseFloat(eventData[eventID][h][10]) > nextHighestValue)
+						{
+							topEight[g].push(eventData[eventID][h][10]);
+						}
+						else if (topEight[g].length > 0 && parseFloat(eventData[eventID][h][10]) < parseFloat(topEight[g][0])  && parseFloat(eventData[eventID][h][10]) > nextHighestValue)
+						{
+							while (topEight[g].length > 0)
+								topEight[g].pop();
+				
+							topEight[g].push(eventData[eventID][h][10]);
+						}
+						else if (topEight[g].length > 0 && parseFloat(eventData[eventID][h][10]) == parseFloat(topEight[g][0]) && parseFloat(eventData[eventID][h][10]) > nextHighestValue)
+						{
+							topEight[g].push(eventData[eventID][h][10]);
+						}
+					} // if g > 0
+					else if (g == 0 && eventData[eventID][h][4] == boyOrGirl)
+					{
+						if (parseFloat(eventData[eventID][h][10]) > 0 && topEight[0].length == 0)
+						{
+							topEight[0].push(eventData[eventID][h][10]);
+//	console.log("Storing first value");
+						}
+						else if (topEight[0].length > 0 && parseFloat(eventData[eventID][h][10]) < parseFloat(topEight[0][0]))
+						{
+							while (topEight[0].length > 0)
+								topEight[0].pop();
+				
+							topEight[0].push(eventData[eventID][h][10]);
+//	console.log("next smallest value found! "+eventData[eventID][h][10]);
+						}
+						else if (topEight[0].length > 0 && parseFloat(eventData[eventID][h][10]) == parseFloat(topEight[0][0]))
+						{
+							topEight[0].push(eventData[eventID][h][10]);
+						}
+					}
+				} // if not zero values
+			} // for look for lower values
+		} // if looking for lowest values
+	}
+	
+	
+	for (var h = 0; h < eventRows[eventID]; h++)
+	{
+		localEventData[eventID][h][3] = "";
+	}	
+
+	// if looking for highest values from 1 - 8
+	if (eventID >= 0 && eventID <= 2)
+	{
+		for (var g = 0; g < topEight.length; g++)
+		{
+			if (topEight[g][0] != null && topEight[g][0] > 0)
+			{
+				for (var h = 0; h < eventRows[eventID]; h++)
+				{
+
+
+					if (topEight[g][0] == eventData[eventID][h][10])
+					{
+	//console.log("Storing into localEventData "+topEight[g][0]+"   "+(g+1));
+						fill(255,255,255);
+						localEventData[eventID][h][2] = topEight[g][0];
+						localEventData[eventID][h][3] = (g+1);
+						localEventData[eventID][h][4] = true;
+					}
+					fill(255,255,255);
+				}		
+			}
+		}
+	} // if looking for highest place value
+
+//console.log("topEight length "+topEight.length);
+//console.log("eventID "+eventID);
+
+	
+		// if looking for highest values from 1 - 8
+	if (eventID >= 3 && eventID <= 5)
+	{
+		for (var g = 0; g < topEight.length; g++)
+		{
+		
+//console.log("topEight data "+topEight[g][0]+"   "+(g+1));
+		
+			if (topEight[g][0] != null && topEight[g][0] > 0)
+			{
+				for (var h = 0; h < eventRows[eventID]; h++)
+				{
+
+
+					if (topEight[g][0] == eventData[eventID][h][10])
+					{
+
+						fill(255,255,255);
+						localEventData[eventID][h][2] = topEight[g][0];
+						localEventData[eventID][h][3] = (g+1);
+						localEventData[eventID][h][4] = true;
+					}
+					fill(255,255,255);
+				}		
+			}
 		}
 	}
 
+	
+	
+	
 	// show place
 //		if (localEventData[showEvent][r][0] != null)
 //			text(localEventData[showEvent][r][3],col6+moreH,(r+1)*continuousGapSize+startGapSize);
@@ -799,14 +888,37 @@ function sendShotputData(newShotputtData)
 
 	var request = new XMLHttpRequest();
 	
-	var httpSendRequestArray2 = new Array(3);
+	var httpSendRequestArray2 = new Array(8);
 	
 	
 	httpSendRequestArray.push(httpSendRequestArray2);
 	
 	httpSendRequestArray[httpSendRequestArray.length-1][0] = request;
 	httpSendRequestArray[httpSendRequestArray.length-1][1] = currentStudentIndex;
-	httpSendRequestArray[httpSendRequestArray.length-1][2] = newShotputtData;
+
+	// append the rest of form data this was done in reverse order
+	httpSendRequestArray[httpSendRequestArray.length-1][2] = localEventData[eventID][currentStudentIndex][3];
+	
+	if (eventID == 0)
+		httpSendRequestArray[httpSendRequestArray.length-1][3] = "shotputt";
+	else if (eventID == 1)
+		httpSendRequestArray[httpSendRequestArray.length-1][3] = "long jump";
+	else if (eventID == 2)
+		httpSendRequestArray[httpSendRequestArray.length-1][3] = "discus";
+	else if (eventID == 3)
+		httpSendRequestArray[httpSendRequestArray.length-1][3] = "100m";
+	else if (eventID == 4)
+		httpSendRequestArray[httpSendRequestArray.length-1][3] = "200m";
+	else if (eventID == 5)
+		httpSendRequestArray[httpSendRequestArray.length-1][3] = "400m";
+	
+	
+	httpSendRequestArray[httpSendRequestArray.length-1][4] = newShotputtData;
+	httpSendRequestArray[httpSendRequestArray.length-1][5] = eventData[eventID][currentStudentIndex][3];
+	httpSendRequestArray[httpSendRequestArray.length-1][6] = eventData[eventID][currentStudentIndex][1];
+	httpSendRequestArray[httpSendRequestArray.length-1][7] = currentGrade;
+
+
 
 /*
 	request.onreadystatechange = function () {
@@ -839,7 +951,6 @@ function sendShotputData(newShotputtData)
 			formData.append("Sheet Name","Grade"+currentGrade);
 			formData.append("Student ID",localEventData[eventID][q][0]);
 			formData.append("Event",localEventData[eventID][q][1]);
-		//	formData.append("Data",eventData[eventID][currentStudentIndex][10]);
 			formData.append("Data",localEventData[eventID][q][2]);
 
 			if (eventID == 0)
@@ -859,11 +970,45 @@ function sendShotputData(newShotputtData)
 			formData.append("Finish Position",localEventData[eventID][q][3]);
 
 
-			var request = new XMLHttpRequest();
+			var request2 = new XMLHttpRequest();
+			
+			
+			// ---------------- push data onto the sendRequestArray --------------
+			var httpSendRequestArray2 = new Array(8);
+
+
+			httpSendRequestArray.push(httpSendRequestArray2);
+
+			httpSendRequestArray[httpSendRequestArray.length-1][0] = request2;
+			httpSendRequestArray[httpSendRequestArray.length-1][1] = q;
+
+			// append the rest of form data this was done in reverse order
+			httpSendRequestArray[httpSendRequestArray.length-1][2] = localEventData[eventID][q][3];
+
+			if (eventID == 0)
+				httpSendRequestArray[httpSendRequestArray.length-1][3] = "shotputt";
+			else if (eventID == 1)
+				httpSendRequestArray[httpSendRequestArray.length-1][3] = "long jump";
+			else if (eventID == 2)
+				httpSendRequestArray[httpSendRequestArray.length-1][3] = "discus";
+			else if (eventID == 3)
+				httpSendRequestArray[httpSendRequestArray.length-1][3] = "100m";
+			else if (eventID == 4)
+				httpSendRequestArray[httpSendRequestArray.length-1][3] = "200m";
+			else if (eventID == 5)
+				httpSendRequestArray[httpSendRequestArray.length-1][3] = "400m";
+
+
+			httpSendRequestArray[httpSendRequestArray.length-1][4] = localEventData[eventID][q][2];
+			httpSendRequestArray[httpSendRequestArray.length-1][5] = localEventData[eventID][q][1];
+			httpSendRequestArray[httpSendRequestArray.length-1][6] = localEventData[eventID][q][0];
+			httpSendRequestArray[httpSendRequestArray.length-1][7] = currentGrade;
+			// ---------------- push data onto the sendRequestArray --------------
+			
 
 			// MARK - MUST CHANGE 2
-			request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
-			request.send(formData);
+			request2.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
+			request2.send(formData);
 			// end - submit data back to the spreadsheet	
 		}
 	}
@@ -872,7 +1017,7 @@ function sendShotputData(newShotputtData)
 function handleAcknowledgement() {
 	currentTime = second();
 	
-	if (abs(previousTime - currentTime) > 3)
+	if (abs(previousTime - currentTime) > 8)
 	{
 		previousTime = currentTime;
 		console.log(currentTime); // readyState will be 4
@@ -881,19 +1026,6 @@ function handleAcknowledgement() {
 		query.send(handleUpdateQueryResponse);
 
 	}
-	
-
-/*
-		console.log(e+"  DONE  "+ r.readyState); // readyState will be 4
-		
-		// success
-		if (r.readyState == 1 ||
-		    r.readyState == 4)
-		{
-			localEventData[eventID][e][5] = 2;
-			
-		}
-		*/
 }
 
 
@@ -1157,7 +1289,7 @@ function showEventData(showEvent)
 		if (localEventData[eventID][r][5] == 1)
 			text("Sending Data",col6+moreH+100,(r+1)*continuousGapSize+startGapSize);
 		else if (localEventData[eventID][r][5] == 2)
-			text("Successful",col6+moreH+100,(r+1)*continuousGapSize+startGapSize);
+			text("Successful Update",col6+moreH+100,(r+1)*continuousGapSize+startGapSize);
 		else if (localEventData[eventID][r][5] == 3)
 			text("Failed to send",col6+moreH+100,(r+1)*continuousGapSize+startGapSize);
 
@@ -1190,10 +1322,11 @@ function showEventData(showEvent)
 
 
 
-
+//console.log("person "+localEventData[showEvent][r][0]);
 		// show place
 		if (localEventData[showEvent][r][0] != "")
 		{
+//console.log("r"+r+"    Place "+localEventData[showEvent][r][3]);
 			text(localEventData[showEvent][r][3],col6+moreH,(r+1)*continuousGapSize+startGapSize);
 			if (localEventData[showEvent][r][3] == 1)
 			{
@@ -1487,7 +1620,7 @@ function showEventData(showEvent)
 			ellipse(333,(gold[g]+1)*continuousGapSize+startGapSize-4,10,10);
 		}
 	}
-
+//			console.log("***"+localEventData[showEvent][0][3],col6+moreH,(0+1)*continuousGapSize+startGapSize);
 }
 
 function showRibbonData()

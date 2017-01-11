@@ -232,17 +232,24 @@ function handleUpdateQueryResponse(response) {
 
 		
 	}
-	
+console.log(httpSendRequestArray.length+" more updates to make");	
 	for (var r = 0; r < yalldata.length; r++)
 	{
 		for (var i = 0; i < httpSendRequestArray.length; i++)
 		{
-//console.log((yalldata[r][4] == boyOrGirl)+"  "+yalldata[r][4]+"="+boyOrGirl);
-//console.log((yalldata[r][3] == aevent)+"  "+yalldata[r][3]+"="+aevent);
-//console.log((r == httpSendRequestArray[i][1])+"  "+r+"="+httpSendRequestArray[i][1]);
+//console.log("Test1: "+(parseFloat(yalldata[r][10].toString()) == parseFloat(localEventData[eventID][r][2].toString())));
+//console.log("Test2: "+(parseInt(yalldata[r][5].toString()) == parseInt(localEventData[eventID][r][3].toString())));
+//console.log("Test3: "+(yalldata[r][5].toString() ==  localEventData[eventID][r][3].toString()));
+
+//console.log("Test1: r"+r+"  "+httpSendRequestArray[i][1]);
+//console.log("Test2: "+(yalldata[r][3] == aevent));
 			if (r == httpSendRequestArray[i][1] && yalldata[r][3] == aevent)
 			{
-				if (parseFloat(yalldata[r][10].toString()) == parseFloat(localEventData[eventID][r][2].toString()))
+			console.log("Test1: r"+r+"  "+httpSendRequestArray[i][1]);
+//console.log("Looking for match");
+				if (parseFloat(yalldata[r][10].toString()) == parseFloat(localEventData[eventID][r][2].toString()) &&
+				    (parseInt(yalldata[r][5].toString()) == parseInt(localEventData[eventID][r][3].toString()) || 
+				    (yalldata[r][5].toString() ==  localEventData[eventID][r][3].toString()) ) )
 				{
 					localEventData[eventID][r][5] = 2;
 					console.log(r+"  "+yalldata[r][10]+"=="+localEventData[eventID][r][2]+" Successful Update!");
@@ -262,7 +269,24 @@ function handleUpdateQueryResponse(response) {
 				}
 				else
 				{
-					console.log(r+"  "+yalldata[r][10]+"!="+localEventData[eventID][r][2]+" Sending Data - Not Updated");
+					// resend the request if it has not been updated
+					formData = new FormData();
+
+					formData.append("Sheet Name","Grade"+httpSendRequestArray[i][7]);
+					formData.append("Student ID",httpSendRequestArray[i][6]);
+					formData.append("Event",httpSendRequestArray[i][5]);
+					formData.append("Data",httpSendRequestArray[i][4]);
+					formData.append("UpdateEvent",httpSendRequestArray[i][3]);
+					formData.append("Finish Position",httpSendRequestArray[i][2]);
+					
+					
+					var request = new XMLHttpRequest();
+					request.open("POST", "https://script.google.com/macros/s/AKfycbwoePIQmE3KMtgAlzcyh93OHSDZhJPlyvl_4T7jAp2Zfb-qmmY/exec");
+					request.send(formData);
+					
+					
+					console.log(r+"  "+(parseFloat(yalldata[r][10].toString()) == parseFloat(localEventData[eventID][r][2].toString()))+"  "+parseFloat(yalldata[r][10].toString())+"!="+parseFloat(localEventData[eventID][r][2].toString())+" Sending Data - Not Updated");
+					console.log(r+"  "+(yalldata[r][5].toString() == localEventData[eventID][r][3].toString())+"  "+parseInt(yalldata[r][5].toString())+"!="+parseInt(localEventData[eventID][r][3].toString())+" Sending Data - Not Updated");
 				}
 			}
 		}
@@ -697,6 +721,6 @@ function handleQueryResponse(response) {
 	urlinp.hide();
 	submitbutton.hide();
 	
-	updateFinishingPlacement();
+//	updateFinishingPlacement();
 
 }
